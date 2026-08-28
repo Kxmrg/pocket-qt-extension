@@ -1,0 +1,23 @@
+{
+  "name": "pocket-pt-site-import",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "fflate": "0.8.3",
+    "qrcode": "1.5.4"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.2.7",
+    "@types/qrcode": "1.5.6",
+    "jsdom": "29.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "4.1.11"
+  }
+}
