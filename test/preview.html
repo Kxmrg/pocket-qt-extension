@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pocket PT Popup Preview</title>
+</head>
+<body>
+  <main id="app"></main>
+  <script type="module">
+    import '../src/popup/styles.css';
+    import { renderPopup } from '../src/popup/render.ts';
+    import QRCode from 'qrcode';
+
+    const params = new URLSearchParams(location.search);
+    const kind = params.get('state') || 'ready';
+    const draft = {
+      architecture: 'nexusphp', scheme: 0, name: '星海 PT', address: 'https://pt.example.com',
+      cookie: 'uid=42; pass=secret-session-value',
+      pages: [
+        { name: '综合', path: '/torrents.php', tags: null, selected: true },
+        { name: '电影', path: '/torrents.php?cat=401', tags: null, selected: true },
+        { name: '电视剧', path: '/torrents.php?cat=402', tags: null, selected: true },
+        { name: '音乐', path: '/torrents.php?cat=406', tags: null, selected: true },
+      ],
+      passkey: 'optional-passkey', userAgent: navigator.userAgent, tags: null, downloadTags: null,
+      widget: 1, token: null, search: true, top: null, fieldWarnings: {}, alternatives: {},
+    };
+    const noop = () => {};
+    const actions = {
+      onRequestPermission: noop, onRetry: noop, onArchitectureChange: noop, onFieldChange: noop,
+      onToggleCredential: noop, onPageToggle: noop, onPageChange: noop, onPageRemove: noop,
+      onPageAdd: noop, onGenerate: noop, onBack: noop, onEnlarge: noop,
+    };
+    const states = {
+      ready: { kind: 'ready', draft, errors: {}, revealed: new Set() },
+      permission: { kind: 'permission', origin: 'https://pt.example.com' },
+      unsupported: { kind: 'unsupported', detection: { id: 'unit3d', supported: false, confidence: 'certain', reasons: ['检测到 UNIT3D 标识', '检测到 UNIT3D 种子路由'] } },
+      qr: { kind: 'qr', draft, payload: { text: 'preview-only', sourceBytes: 512, compressedBytes: 284 }, enlarged: false },
+    };
+    renderPopup(document.querySelector('#app'), states[kind] || states.ready, actions);
+    if (kind === 'qr') {
+      await QRCode.toCanvas(document.querySelector('#qr-canvas'), 'pocket-pt://import/site?v=1&data=preview', {
+        width: 280, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#102a2b', light: '#fffdf6' },
+      });
+    }
+  </script>
+</body>
+</html>
