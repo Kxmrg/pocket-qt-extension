@@ -34,7 +34,18 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
       return { state: 'unsupported', detection };
     }
     const cookieHeader = formatCookieHeader(cookies, context.url);
-    return { state: 'ready', detection, draft: adaptSite({ detection, snapshot, cookieHeader }) };
+    const snapshotWithCookieCandidates: PageSnapshot = {
+      ...snapshot,
+      candidates: [
+        ...snapshot.candidates,
+        ...cookies.map((cookie) => ({ key: cookie.name, value: cookie.value, source: 'cookie' })),
+      ],
+    };
+    return {
+      state: 'ready',
+      detection,
+      draft: adaptSite({ detection, snapshot: snapshotWithCookieCandidates, cookieHeader }),
+    };
   } catch {
     return { state: 'error', message: '读取当前站点失败，请刷新页面后重试' };
   }

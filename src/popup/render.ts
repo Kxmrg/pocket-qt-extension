@@ -106,6 +106,7 @@ function pageRows(draft: SiteDraft): string {
       <div class="field compact"><label for="page-name-${index}">页面名称</label><input id="page-name-${index}" data-page-field="name" data-page-index="${index}" value="${escapeHtml(page.name)}"></div>
       <div class="field compact path"><label for="page-path-${index}">页面路径</label><input id="page-path-${index}" data-page-field="path" data-page-index="${index}" value="${escapeHtml(page.path)}" spellcheck="false"></div>
       <button type="button" class="remove-page" data-page-remove="${index}" aria-label="删除页面 ${index + 1}">删除</button>
+      <div class="field compact page-tags"><label for="page-tags-${index}">页面标签（可选）</label><input id="page-tags-${index}" data-page-field="tags" data-page-index="${index}" value="${escapeHtml(page.tags ?? '')}" placeholder="多个标签用英文逗号分隔"></div>
     </div>
   </article>`).join('');
 }
@@ -143,6 +144,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
         </div>
       </details>
       <aside class="security-note"><strong>LOCAL ONLY</strong><p>配置不会上传或保存。生成的二维码包含登录凭据，请勿分享。</p></aside>
+      ${errors.payload ? `<p class="payload-error" data-payload-error role="alert">${escapeHtml(errors.payload)}</p>` : ''}
       <div class="action-dock"><button type="button" class="primary" data-action="generate" ${invalid ? 'disabled' : ''}>生成二维码 <span>→</span></button></div>
     </form>
   </div>`;

@@ -46,6 +46,22 @@ describe('collectSiteDraft', () => {
     expect(result.draft).toMatchObject({ scheme: 0, cookie: 'session=secret', address: 'https://pt.example' });
   });
 
+  it('uses named cookies as mTorrent UID and API token candidates', async () => {
+    const result = await collectSiteDraft(deps({
+      getContext: async () => ({ url: 'https://kp.m-team.cc/browse', origin: 'https://kp.m-team.cc', hasPermission: true }),
+      readSnapshot: async () => ({
+        ...nexusSnapshot(), url: 'https://kp.m-team.cc/browse', origin: 'https://kp.m-team.cc', host: 'kp.m-team.cc', meta: [], links: [],
+      }),
+      readCookies: async () => [
+        { name: 'uid', value: '2048', domain: '.m-team.cc', path: '/', secure: true },
+        { name: 'x-api-key', value: 'api-from-cookie', domain: '.m-team.cc', path: '/', secure: true },
+      ],
+    }));
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.draft).toMatchObject({ architecture: 'mtorrent', cookie: '2048', token: 'api-from-cookie' });
+  });
+
   it('returns unsupported details without an encodable draft', async () => {
     const result = await collectSiteDraft(deps({
       readSnapshot: async () => ({ ...nexusSnapshot(), meta: [], textSample: 'Powered by UNIT3D' }),

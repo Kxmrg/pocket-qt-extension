@@ -54,6 +54,7 @@ describe('renderPopup', () => {
     expect((root.querySelector('#site-address') as HTMLInputElement).value).toBe('https://pt.example');
     expect((root.querySelector('#user-agent') as HTMLInputElement).value).toBe('Browser UA');
     expect((root.querySelector('#cookie') as HTMLInputElement).type).toBe('password');
+    expect(root.querySelector('#page-tags-0')).not.toBeNull();
     const pageChecks = [...root.querySelectorAll<HTMLInputElement>('input[data-page-selected]')];
     expect(pageChecks).toHaveLength(2);
     expect(pageChecks.every((input) => input.checked)).toBe(true);
@@ -65,6 +66,14 @@ describe('renderPopup', () => {
     }, actions());
     expect(root.querySelector('[role="alert"]')?.textContent).toContain('请输入 Cookie');
     expect((root.querySelector('[data-action="generate"]') as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('shows a QR capacity error near the final action', () => {
+    renderPopup(root, {
+      kind: 'ready', draft: draft(), errors: { payload: '二维码数据过大，请减少种子页面后重试' }, revealed: new Set(),
+    }, actions());
+    const alert = root.querySelector('[data-payload-error][role="alert"]');
+    expect(alert?.textContent).toContain('二维码数据过大');
   });
 
   it('reveals only the selected credential', () => {
