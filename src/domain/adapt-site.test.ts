@@ -33,6 +33,14 @@ describe('adaptSite', () => {
     expect(draft.pages[0]?.path).toBe('/torrents.php');
   });
 
+  it('keeps only the site brand from a decorated page title', () => {
+    const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse', {
+      title: 'M-Team - TP :: 首頁 - Powered by mTorrent',
+      links: [{ text: '我的资料', href: 'https://kp.m-team.cc/profile/detail/295964' }],
+    }));
+    expect(draft.name).toBe('M-Team');
+  });
+
   it('maps TNode CSRF token and passkey', () => {
     const draft = adaptSite(input('tnode', 'https://zhuque.in/torrent/search', {
       meta: [{ name: 'csrf-token', property: '', content: 'csrf-secret' }],
@@ -47,12 +55,10 @@ describe('adaptSite', () => {
     ['https://api.m-team.cc/browse', 'https://api.m-team.cc'],
   ])('normalizes M-Team address %s to %s', (url, address) => {
     const draft = adaptSite(input('mtorrent', url, {
-      storage: [
-        { area: 'local', key: 'uid', value: '88' },
-        { area: 'local', key: 'x-api-key', value: 'api-token' },
-      ],
+      links: [{ text: '我的资料', href: `${new URL(url).origin}/profile/detail/295964` }],
     }));
-    expect(draft).toMatchObject({ scheme: 2, address, cookie: '88', token: 'api-token' });
+    expect(draft).toMatchObject({ scheme: 2, address, cookie: '295964', token: null });
+    expect(draft.fieldWarnings.token).toBe('请前往控制台实验室复制令牌并手动填写');
   });
 
   it('maps HaiDan profile UID into token and retains the complete Cookie header', () => {
@@ -64,6 +70,6 @@ describe('adaptSite', () => {
 
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
-    expect(draft.fieldWarnings).toMatchObject({ cookie: '未自动获取 UID', token: '未自动获取 Access Token' });
+    expect(draft.fieldWarnings).toMatchObject({ cookie: '未自动获取 UUID', token: '请前往控制台实验室复制令牌并手动填写' });
   });
 });

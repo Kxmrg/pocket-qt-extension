@@ -18,7 +18,7 @@ const rootElement = document.querySelector<HTMLElement>('#app');
 if (!rootElement) throw new Error('Popup root is missing');
 const root: HTMLElement = rootElement;
 
-let state: PopupState = { kind: 'loading', message: '正在检查当前页面…' };
+let state: PopupState = { kind: 'idle' };
 let activeContext: ActivePageContext | null = null;
 
 const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3> = {
@@ -35,8 +35,8 @@ const defaultPageByArchitecture: Record<string, string> = {
   haidan: '/torrents.php',
 };
 
-function readyState(draft: SiteDraft, revealed = new Set<string>()): PopupState {
-  return { kind: 'ready', draft, errors: validateDraft(draft).errors, revealed };
+function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
+  return { kind: 'ready', draft, errors: validateDraft(draft).errors, revealed, sourceOrigin };
 }
 
 async function drawQr(): Promise<void> {
@@ -64,7 +64,7 @@ function currentReady(): Extract<PopupState, { kind: 'ready' }> | null {
 function updateDraft(transform: (draft: SiteDraft) => SiteDraft): void {
   const ready = currentReady();
   if (!ready) return;
-  paint(readyState(transform(ready.draft), ready.revealed));
+  paint(readyState(transform(ready.draft), ready.revealed, ready.sourceOrigin));
 }
 
 async function loadSite(): Promise<void> {
@@ -77,7 +77,7 @@ async function loadSite(): Promise<void> {
       readSnapshot: async () => readPageSnapshot(context.tabId),
       readCookies,
     });
-    const next = popupStateFromCollection(result);
+    const next = popupStateFromCollection(result, context.origin);
     paint(next.kind === 'ready' ? readyState(next.draft) : next);
   } catch (error) {
     paint({ kind: 'error', message: error instanceof Error ? error.message : '读取当前站点失败，请重试' });
@@ -85,6 +85,8 @@ async function loadSite(): Promise<void> {
 }
 
 const actions: PopupActions = {
+  onRead: () => { void loadSite(); },
+  onRefresh: () => { void loadSite(); },
   onRequestPermission: () => {
     if (state.kind !== 'permission') return;
     void requestCurrentOrigin(state.origin).then((granted) => {
@@ -165,4 +167,4 @@ const actions: PopupActions = {
   },
 };
 
-void loadSite();
+paint(state);

@@ -30,10 +30,10 @@ export function validateDraft(draft: SiteDraft): DraftValidation {
   if (!isHttpAddress(draft.address)) errors.address = '请输入有效的 HTTP 或 HTTPS 站点地址';
 
   if (!draft.cookie.trim()) {
-    errors.cookie = draft.architecture === 'mtorrent' ? '请输入 UID' : '请输入 Cookie';
+    errors.cookie = draft.architecture === 'mtorrent' ? '请输入 UUID' : '请输入 Cookie';
   }
   if (draft.architecture === 'tnode' && !draft.token?.trim()) errors.token = '请输入 X-Csrf-Token';
-  if (draft.architecture === 'mtorrent' && !draft.token?.trim()) errors.token = '请输入 Access Token';
+  if (draft.architecture === 'mtorrent' && !draft.token?.trim()) errors.token = '请前往控制台实验室复制令牌并手动填写';
   if (draft.architecture === 'haidan' && !draft.token?.trim()) errors.token = '请输入 UID';
 
   const selectedPages = draft.pages.filter((page) => page.selected);

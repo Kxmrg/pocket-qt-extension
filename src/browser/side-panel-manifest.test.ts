@@ -1,0 +1,20 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+
+interface ExtensionManifest {
+  permissions?: string[];
+  action?: { default_popup?: string };
+  side_panel?: { default_path?: string };
+  background?: { service_worker?: string; type?: string };
+}
+
+describe('side panel manifest', () => {
+  it('opens a global side panel from the toolbar action instead of a transient popup', () => {
+    const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
+
+    expect(manifest.permissions).toContain('sidePanel');
+    expect(manifest.action?.default_popup).toBeUndefined();
+    expect(manifest.side_panel?.default_path).toBe('popup.html');
+    expect(manifest.background).toEqual({ service_worker: 'assets/background.js', type: 'module' });
+  });
+});

@@ -38,6 +38,8 @@ function linkCandidates(field: CandidateField, snapshot: PageSnapshot, target: F
     if (field === 'uid') {
       const match = url.pathname.toLowerCase().endsWith('/userdetails.php') ? url.searchParams.get('id') : null;
       if (match) addCandidate(target, match, '个人资料链接', 60);
+      const profileDetail = url.pathname.match(/\/profile\/detail\/(\d+)(?:\/|$)/i);
+      if (profileDetail?.[1]) addCandidate(target, profileDetail[1], '个人资料链接', 140);
     }
     if (field === 'passkey') {
       const queryValue = url.searchParams.get('passkey');

@@ -4,14 +4,17 @@ import type { EncodedPayload } from '../domain/payload';
 import type { ArchitectureId, DetectionResult } from '../domain/types';
 
 export type PopupState =
+  | { kind: 'idle' }
   | { kind: 'loading'; message: string }
   | { kind: 'permission'; origin: string }
   | { kind: 'unsupported'; detection: DetectionResult }
   | { kind: 'error'; message: string }
-  | { kind: 'ready'; draft: SiteDraft; errors: Record<string, string>; revealed: Set<string> }
+  | { kind: 'ready'; draft: SiteDraft; errors: Record<string, string>; revealed: Set<string>; sourceOrigin?: string }
   | { kind: 'qr'; draft: SiteDraft; payload: EncodedPayload; enlarged: boolean };
 
 export interface PopupActions {
+  onRead: () => void;
+  onRefresh: () => void;
   onRequestPermission: () => void;
   onRetry: () => void;
   onArchitectureChange: (architecture: ArchitectureId) => void;
@@ -28,8 +31,8 @@ export interface PopupActions {
 
 const architectureNames: Record<ArchitectureId, string> = {
   nexusphp: 'NexusPHP',
-  tnode: 'TNode · 朱雀',
-  mtorrent: 'mTorrent · M-Team',
+  tnode: 'TNode',
+  mtorrent: 'mTorrent',
   haidan: 'HaiDanPt',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
@@ -113,11 +116,12 @@ function pageRows(draft: SiteDraft): string {
 
 function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
-  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? 'Access Token' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
-  const cookieLabel = draft.architecture === 'mtorrent' ? 'UID' : 'Cookie';
+  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? '令牌' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
+  const cookieLabel = draft.architecture === 'mtorrent' ? 'UUID' : 'Cookie';
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
     ${header('SITE TRANSFER / 01', draft.name || '检查站点配置', `${architectureNames[draft.architecture]} · 本地处理`)}
+    <div class="source-bar"><span>数据来自 ${escapeHtml(state.sourceOrigin ? new URL(state.sourceOrigin).host : '当前页面')}</span><button type="button" class="secondary compact-button" data-action="refresh">刷新数据</button></div>
     <form id="site-form" novalidate>
       <section class="panel"><div class="section-heading"><span>01</span><div><h2>基础信息</h2><p>确认识别结果和请求身份</p></div></div>
         <div class="field-grid">${architectureSelect(draft, errors)}
@@ -125,7 +129,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
         ${regularField('site-address', '站点地址', draft.address, 'address', { error: errors.address })}
         ${regularField('user-agent', 'User-Agent', draft.userAgent ?? '', 'userAgent', { error: errors.userAgent })}</div>
       </section>
-      <section class="panel sensitive-panel"><div class="section-heading"><span>02</span><div><h2>登录信息</h2><p>仅保留在当前弹窗内存中</p></div></div>
+      <section class="panel sensitive-panel"><div class="section-heading"><span>02</span><div><h2>登录信息</h2><p>仅保留在当前侧边栏内存中</p></div></div>
         ${credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state)}
         ${credentialField('token', tokenLabel, draft.token, 'token', state)}
         ${credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state)}
@@ -151,7 +155,9 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
 }
 
 function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'ready' }>): void {
-  if (state.kind === 'loading') {
+  if (state.kind === 'idle') {
+    root.innerHTML = `<div class="shell state-shell idle-shell">${header('POCKET PT', '导入当前站点', '仅在你点击后读取页面')}<div class="permission-card"><p>打开或切换到需要导入的 PT 页面，再主动读取当前页面。侧边栏会在切换标签页时保持打开。</p><button class="primary" type="button" data-action="read">读取当前页面 <span>→</span></button></div></div>`;
+  } else if (state.kind === 'loading') {
     root.innerHTML = `<div class="shell state-shell" aria-live="polite">${header('SITE TRANSFER', '正在读取站点')}<div class="scanner"><i></i></div><p>${escapeHtml(state.message)}</p></div>`;
   } else if (state.kind === 'permission') {
     root.innerHTML = `<div class="shell state-shell">${header('PERMISSION / ONCE', '允许读取当前站点', state.origin)}<div class="permission-card"><p>需要读取当前站点页面和完整 Cookie，才能生成手机端配置。权限仅授予此域名。</p><button class="primary" type="button" data-action="permission">允许读取本站 <span>→</span></button></div></div>`;
@@ -174,6 +180,8 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   root.querySelector<HTMLElement>('[data-action="back"]')?.addEventListener('click', actions.onBack);
   root.querySelector<HTMLElement>('[data-action="enlarge"]')?.addEventListener('click', actions.onEnlarge);
   root.querySelector<HTMLElement>('[data-action="add-page"]')?.addEventListener('click', actions.onPageAdd);
+  root.querySelector<HTMLElement>('[data-action="read"]')?.addEventListener('click', actions.onRead);
+  root.querySelector<HTMLElement>('[data-action="refresh"]')?.addEventListener('click', actions.onRefresh);
 
   root.querySelector<HTMLSelectElement>('[data-architecture]')?.addEventListener('change', (event) => {
     actions.onArchitectureChange((event.currentTarget as HTMLSelectElement).value as ArchitectureId);
@@ -205,9 +213,9 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   }
 }
 
-export function popupStateFromCollection(result: CollectionResult): PopupState {
+export function popupStateFromCollection(result: CollectionResult, sourceOrigin?: string): PopupState {
   if (result.state === 'permission-required') return { kind: 'permission', origin: result.origin };
   if (result.state === 'unsupported') return { kind: 'unsupported', detection: result.detection };
   if (result.state === 'error') return { kind: 'error', message: result.message };
-  return { kind: 'ready', draft: result.draft, errors: {}, revealed: new Set() };
+  return { kind: 'ready', draft: result.draft, errors: {}, revealed: new Set(), sourceOrigin };
 }

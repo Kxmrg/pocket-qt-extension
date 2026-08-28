@@ -44,8 +44,13 @@ export async function readPageSnapshot(tabId: number): Promise<PageSnapshot> {
   return snapshot;
 }
 
-export async function readCookies(url: string): Promise<CookieLike[]> {
-  const cookies = await chrome.cookies.getAll({ url });
+export async function readCookies(url: string, tabId?: number): Promise<CookieLike[]> {
+  const selectedTabId = tabId;
+  const stores = selectedTabId === undefined ? [] : await chrome.cookies.getAllCookieStores();
+  const storeId = selectedTabId === undefined
+    ? undefined
+    : stores.find((store) => store.tabIds.includes(selectedTabId))?.id;
+  const cookies = await chrome.cookies.getAll(storeId ? { url, storeId } : { url });
   return cookies.map((cookie) => ({
     name: cookie.name,
     value: cookie.value,

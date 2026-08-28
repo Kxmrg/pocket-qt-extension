@@ -35,7 +35,9 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3>> = {
 };
 
 function siteName(snapshot: PageSnapshot): string {
-  const cleaned = snapshot.title
+  const withoutGenerator = snapshot.title.replace(/\s*[-|｜:]?\s*Powered by\b.*$/i, '');
+  const brand = withoutGenerator.split(/\s+(?:-|::|\||｜)\s+/)[0] ?? '';
+  const cleaned = brand
     .replace(/\s*[-|｜]\s*(?:首页|home|index)\s*$/i, '')
     .replace(/\s+/g, ' ')
     .trim();
@@ -78,11 +80,10 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     addSelectionMetadata('token', 'X-Csrf-Token', csrf, warnings, alternatives);
   } else if (detection.id === 'mtorrent') {
     const uid = selectCandidate('uid', snapshot);
-    const apiToken = selectCandidate('apiToken', snapshot);
     cookie = uid.value;
-    token = apiToken.value;
-    addSelectionMetadata('cookie', 'UID', uid, warnings, alternatives);
-    addSelectionMetadata('token', 'Access Token', apiToken, warnings, alternatives);
+    token = '';
+    addSelectionMetadata('cookie', 'UUID', uid, warnings, alternatives);
+    warnings.token = '请前往控制台实验室复制令牌并手动填写';
   } else if (detection.id === 'haidan') {
     const uid = selectCandidate('uid', snapshot);
     token = uid.value;

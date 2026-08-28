@@ -47,9 +47,9 @@ describe('validateDraft', () => {
     expect(result.errors.token).toBe('请输入 X-Csrf-Token');
   });
 
-  it('requires mTorrent UID and Access Token', () => {
+  it('requires mTorrent UUID and laboratory token', () => {
     const result = validateDraft(validDraft({ architecture: 'mtorrent', scheme: 2, cookie: '', token: null }));
-    expect(result.errors).toMatchObject({ cookie: '请输入 UID', token: '请输入 Access Token' });
+    expect(result.errors).toMatchObject({ cookie: '请输入 UUID', token: '请前往控制台实验室复制令牌并手动填写' });
   });
 
   it('requires HaiDan UID', () => {

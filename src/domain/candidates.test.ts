@@ -50,6 +50,18 @@ describe('selectCandidate', () => {
     expect(result.value).toBe('42');
   });
 
+  it('extracts an mTorrent UUID from its profile detail route', () => {
+    const result = selectCandidate('uid', snapshot({
+      url: 'https://kp.m-team.cc/browse',
+      origin: 'https://kp.m-team.cc',
+      host: 'kp.m-team.cc',
+      links: [{ text: 'M-Team 用户', href: 'https://kp.m-team.cc/profile/detail/295964' }],
+      candidates: [{ key: 'uid', value: 'cookie-value-is-not-the-profile-uuid', source: 'cookie' }],
+    }));
+    expect(result.value).toBe('295964');
+    expect(result.alternatives[0]?.source).toBe('个人资料链接');
+  });
+
   it('flags conflicting values and keeps the highest confidence candidate', () => {
     const result = selectCandidate('apiToken', snapshot({
       candidates: [{ key: 'x-api-key', value: 'explicit-token', source: 'meta' }],

@@ -19,7 +19,7 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
 
 function actions(): PopupActions {
   return {
-    onRequestPermission: vi.fn(), onRetry: vi.fn(), onArchitectureChange: vi.fn(),
+    onRead: vi.fn(), onRefresh: vi.fn(), onRequestPermission: vi.fn(), onRetry: vi.fn(), onArchitectureChange: vi.fn(),
     onFieldChange: vi.fn(), onToggleCredential: vi.fn(), onPageToggle: vi.fn(),
     onPageChange: vi.fn(), onPageRemove: vi.fn(), onPageAdd: vi.fn(),
     onGenerate: vi.fn(), onBack: vi.fn(), onEnlarge: vi.fn(),
@@ -34,6 +34,16 @@ beforeEach(() => {
 });
 
 describe('renderPopup', () => {
+  it('waits for an explicit read action before collecting the current page', () => {
+    const handlers = actions();
+    renderPopup(root, { kind: 'idle' }, handlers);
+    expect(root.querySelector('#site-form')).toBeNull();
+    const readButton = root.querySelector<HTMLButtonElement>('[data-action="read"]');
+    expect(readButton?.textContent).toContain('读取当前页面');
+    readButton?.click();
+    expect(handlers.onRead).toHaveBeenCalledOnce();
+  });
+
   it('renders one explicit per-site permission action', () => {
     const state: PopupState = { kind: 'permission', origin: 'https://pt.example' };
     renderPopup(root, state, actions());
@@ -49,7 +59,8 @@ describe('renderPopup', () => {
   });
 
   it('renders editable fields, masked credentials, and all extracted pages checked', () => {
-    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, actions());
+    const handlers = actions();
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set(), sourceOrigin: 'https://pt.example' }, handlers);
     expect((root.querySelector('#site-name') as HTMLInputElement).value).toBe('Example PT');
     expect((root.querySelector('#site-address') as HTMLInputElement).value).toBe('https://pt.example');
     expect((root.querySelector('#user-agent') as HTMLInputElement).value).toBe('Browser UA');
@@ -58,6 +69,19 @@ describe('renderPopup', () => {
     const pageChecks = [...root.querySelectorAll<HTMLInputElement>('input[data-page-selected]')];
     expect(pageChecks).toHaveLength(2);
     expect(pageChecks.every((input) => input.checked)).toBe(true);
+    expect(root.textContent).toContain('数据来自 pt.example');
+    root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
+    expect(handlers.onRefresh).toHaveBeenCalledOnce();
+  });
+
+  it('shows architecture names without fixed-site aliases', () => {
+    renderPopup(root, { kind: 'ready', draft: draft({ architecture: 'mtorrent', scheme: 2 }), errors: {}, revealed: new Set(), sourceOrigin: 'https://kp.m-team.cc' }, actions());
+    expect(root.querySelector<HTMLOptionElement>('option[value="mtorrent"]')?.textContent).toBe('mTorrent');
+    expect(root.querySelector<HTMLOptionElement>('option[value="tnode"]')?.textContent).toBe('TNode');
+    expect(root.textContent).not.toContain('M-Team');
+    expect(root.textContent).not.toContain('朱雀');
+    expect(root.querySelector('label[for="cookie"]')?.textContent).toBe('UUID');
+    expect(root.querySelector('label[for="token"]')?.textContent).toBe('令牌');
   });
 
   it('shows field errors and disables QR generation', () => {

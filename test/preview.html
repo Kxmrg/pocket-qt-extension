@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pocket PT Popup Preview</title>
+  <title>Pocket PT Side Panel Preview</title>
 </head>
 <body>
   <main id="app"></main>
@@ -26,14 +26,24 @@
       passkey: 'optional-passkey', userAgent: navigator.userAgent, tags: null, downloadTags: null,
       widget: 1, token: null, search: true, top: null, fieldWarnings: {}, alternatives: {},
     };
+    const previewErrors = {};
+    if (params.get('arch') === 'mtorrent') {
+      Object.assign(draft, {
+        architecture: 'mtorrent', scheme: 2, name: 'M-Team', address: 'https://api.m-team.cc',
+        cookie: '295964', token: null,
+        fieldWarnings: { token: '请前往控制台实验室复制令牌并手动填写' },
+      });
+      previewErrors.token = '请前往控制台实验室复制令牌并手动填写';
+    }
     const noop = () => {};
     const actions = {
-      onRequestPermission: noop, onRetry: noop, onArchitectureChange: noop, onFieldChange: noop,
+      onRead: noop, onRefresh: noop, onRequestPermission: noop, onRetry: noop, onArchitectureChange: noop, onFieldChange: noop,
       onToggleCredential: noop, onPageToggle: noop, onPageChange: noop, onPageRemove: noop,
       onPageAdd: noop, onGenerate: noop, onBack: noop, onEnlarge: noop,
     };
     const states = {
-      ready: { kind: 'ready', draft, errors: {}, revealed: new Set() },
+      idle: { kind: 'idle' },
+      ready: { kind: 'ready', draft, errors: previewErrors, revealed: new Set(), sourceOrigin: params.get('arch') === 'mtorrent' ? 'https://kp.m-team.cc' : 'https://pt.example.com' },
       permission: { kind: 'permission', origin: 'https://pt.example.com' },
       unsupported: { kind: 'unsupported', detection: { id: 'unit3d', supported: false, confidence: 'certain', reasons: ['检测到 UNIT3D 标识', '检测到 UNIT3D 种子路由'] } },
       qr: { kind: 'qr', draft, payload: { text: 'preview-only', sourceBytes: 512, compressedBytes: 284 }, enlarged: false },

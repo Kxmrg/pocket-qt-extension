@@ -4,6 +4,7 @@ import { detectArchitecture } from '../domain/detect-architecture';
 import type { DetectionResult, PageSnapshot } from '../domain/types';
 
 export interface CollectionContext {
+  tabId?: number;
   url: string;
   origin: string;
   hasPermission: boolean;
@@ -12,7 +13,7 @@ export interface CollectionContext {
 export interface CollectionDeps {
   getContext: () => Promise<CollectionContext>;
   readSnapshot: () => Promise<PageSnapshot>;
-  readCookies: (url: string) => Promise<CookieLike[]>;
+  readCookies: (url: string, tabId?: number) => Promise<CookieLike[]>;
 }
 
 export type CollectionResult =
@@ -27,7 +28,7 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
     if (!context.hasPermission) return { state: 'permission-required', origin: context.origin };
     const [snapshot, cookies] = await Promise.all([
       deps.readSnapshot(),
-      deps.readCookies(context.url),
+      deps.readCookies(context.url, context.tabId),
     ]);
     const detection = detectArchitecture(snapshot);
     if (detection.id === 'gazelle' || detection.id === 'unit3d') {

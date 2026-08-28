@@ -8,7 +8,13 @@ export default defineConfig({
       polyfill: false,
     },
     rollupOptions: {
-      input: 'popup.html',
+      input: {
+        popup: 'popup.html',
+        background: 'src/background.ts',
+      },
+      output: {
+        entryFileNames: 'assets/[name].js',
+      },
     },
   },
   test: {
