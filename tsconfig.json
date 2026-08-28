@@ -11,7 +11,7 @@
     "noEmit": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "types": ["chrome", "vitest/globals"]
+    "types": ["chrome", "vite/client", "vitest/globals"]
   },
   "include": ["src", "vite.config.ts"]
 }
