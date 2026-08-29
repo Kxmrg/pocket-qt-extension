@@ -109,6 +109,12 @@ describe('renderPopup', () => {
     expect(root.querySelector('#page-tags-0')).toBeNull();
     expect(root.querySelector('[data-page-selected]')).toBeNull();
     expect(root.querySelectorAll('.page-row')).toHaveLength(2);
+    expect(root.querySelector('[data-page-title="0"]')?.textContent).toContain('页面 #1');
+    expect(root.querySelector('[data-page-title="1"]')?.textContent).toContain('页面 #2');
+    expect(root.querySelector('[data-page-title="0"] .page-number')?.textContent).toBe('#1');
+    expect([...root.querySelector('.page-row')!.children].map((element) => element.classList[0])).toEqual([
+      'page-row-heading', 'field', 'field',
+    ]);
     expect((root.querySelector('#page-name-0') as HTMLInputElement).value).toBe('综合');
     expect((root.querySelector('#page-path-0') as HTMLInputElement).value).toBe('/torrents.php');
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('pt.example');

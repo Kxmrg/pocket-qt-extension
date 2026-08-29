@@ -133,10 +133,11 @@ function architectureSelect(draft: SiteDraft, errors: Record<string, string>): s
 
 function pageRows(draft: SiteDraft): string {
   return draft.pages.map((page, index) => `<article class="page-row">
-    <div class="page-row-header">
-      <div class="field compact"><label for="page-name-${index}">名称</label><input id="page-name-${index}" data-page-field="name" data-page-index="${index}" value="${escapeHtml(page.name)}"></div>
+    <div class="page-row-heading" data-page-title="${index}">
+      <strong>页面 <span class="page-number">#${index + 1}</span></strong>
       <button type="button" class="icon-button remove-page" data-page-remove="${index}" aria-label="删除页面 ${index + 1}">${icon('remove')}</button>
     </div>
+    <div class="field compact page-row-name"><label for="page-name-${index}">名称</label><input id="page-name-${index}" data-page-field="name" data-page-index="${index}" value="${escapeHtml(page.name)}"></div>
     <div class="field compact page-row-path"><label for="page-path-${index}">路径</label><input id="page-path-${index}" data-page-field="path" data-page-index="${index}" value="${escapeHtml(page.path)}" spellcheck="false"></div>
   </article>`).join('');
 }
