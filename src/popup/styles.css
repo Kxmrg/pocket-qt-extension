@@ -23,8 +23,8 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--background); }
-body { width: 100%; min-width: 360px; min-height: 250px; margin: 0; overflow-x: hidden; background: var(--background); }
+html { min-width: 400px; background: var(--background); }
+body { width: 100%; min-width: 400px; min-height: 250px; margin: 0; overflow-x: auto; background: var(--background); }
 button, input, select { font: inherit; }
 button, summary, a { -webkit-tap-highlight-color: transparent; }
 button { cursor: pointer; }

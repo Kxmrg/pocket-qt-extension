@@ -194,9 +194,10 @@ describe('renderPopup', () => {
   });
 
   it('renders a single responsive QR card without metadata or enlargement controls', () => {
+    const handlers = actions();
     renderPopup(root, {
       kind: 'qr', draft: draft(), payload: { text: 'pocket-pt://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 },
-    }, actions());
+    }, handlers);
     expect(root.querySelector('#qr-canvas')).not.toBeNull();
     expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Qt 站点导入二维码');
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
@@ -208,6 +209,8 @@ describe('renderPopup', () => {
     expect(root.textContent).toContain('返回修改');
     expect(root.textContent).not.toContain('放大二维码');
     expect(root.querySelectorAll('.qr-actions button')).toHaveLength(1);
+    root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
+    expect(handlers.onRefresh).toHaveBeenCalledOnce();
   });
 
   it('connects every form control to an accessible label', () => {
