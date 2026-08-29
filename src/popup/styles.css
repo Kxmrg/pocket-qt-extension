@@ -82,7 +82,7 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 /* Ready form */
 .site-context { display: flex; min-height: 54px; margin: -24px -24px 20px; padding: 0 24px; align-items: center; gap: 10px; background: var(--surface); }
 .status-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
-.site-context strong { min-width: 0; overflow: hidden; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.site-context strong { min-width: 0; overflow: hidden; color: var(--text); font-size: 16px; font-weight: 750; letter-spacing: -.01em; text-overflow: ellipsis; white-space: nowrap; }
 .architecture-badge { padding: 5px 8px; border: 1px solid #cbdafa; border-radius: 7px; color: var(--primary); background: var(--primary-soft); font-size: 11px; font-weight: 650; }
 .panel { margin: 0 0 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .form-section { padding: 20px; }
@@ -165,9 +165,9 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 /* QR */
 .qr-shell { min-height: 100vh; }
 .qr-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
-.qr-frame { display: grid; width: 100%; margin: 0 auto; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; place-items: center; }
+.qr-frame { display: grid; width: 100%; margin: 0 auto; padding: 14px; background: #fff; place-items: center; }
 .qr-frame canvas { display: block; width: 100% !important; min-width: 280px; max-width: 640px; height: auto !important; aspect-ratio: 1; image-rendering: pixelated; }
-.qr-site-info { display: grid; margin: 18px 0 0; padding: 16px 0 0; gap: 12px; border-top: 1px solid var(--border); }
+.qr-site-info { display: grid; margin: 18px 0 0; padding: 0; gap: 12px; }
 .qr-site-info > div { display: grid; min-width: 0; grid-template-columns: 78px minmax(0, 1fr); align-items: baseline; gap: 12px; }
 .qr-site-info dt { color: var(--text-muted); font-size: 12px; font-weight: 650; }
 .qr-site-info dd { min-width: 0; margin: 0; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
