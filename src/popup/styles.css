@@ -133,7 +133,7 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 .icon-button { display: grid; width: 42px; height: 42px; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--text-muted); background: var(--surface); place-items: center; }
 .icon-button .icon { width: 17px; height: 17px; }
 .icon-button:hover { border-color: #f0c8cc; color: var(--danger); background: var(--danger-soft); }
-.page-actions { display: grid; margin-top: 10px; grid-template-columns: 1fr 1fr; gap: 10px; }
+.page-actions { display: grid; margin-top: 16px; grid-template-columns: 1fr 1fr; gap: 10px; }
 .add-page { display: flex; width: 100%; min-height: 44px; padding: 8px 10px; align-items: center; justify-content: center; gap: 7px; border: 1px solid #a9bce4; border-radius: var(--radius-sm); color: var(--primary); background: var(--surface); font-size: 13px; font-weight: 650; }
 .add-current-page { border-color: #cbdafa; background: var(--primary-soft); }
 .add-page:hover { border-color: var(--primary); background: var(--primary-soft); }
