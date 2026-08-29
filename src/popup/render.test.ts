@@ -44,6 +44,21 @@ describe('renderPopup', () => {
     expect(handlers.onRead).toHaveBeenCalledOnce();
   });
 
+  it('keeps onboarding, data safety, project, and authorization links on the unread home', () => {
+    renderPopup(root, { kind: 'idle' }, actions());
+
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点');
+    expect(root.querySelector('[data-home-features]')?.textContent).toContain('自动识别');
+    expect(root.querySelector('[data-home-security]')?.textContent).toContain('仅在本机处理');
+
+    const project = root.querySelector<HTMLAnchorElement>('a[data-home-link="project"]');
+    const license = root.querySelector<HTMLAnchorElement>('a[data-home-link="license"]');
+    expect(project?.href).toBe('https://gitee.com/Kxmrg/pocket-qt-app');
+    expect(license?.href).toBe('https://pocket.kxmrg.com/user/licenses');
+    expect(project?.target).toBe('_blank');
+    expect(license?.target).toBe('_blank');
+  });
+
   it('renders one explicit per-site permission action', () => {
     const state: PopupState = { kind: 'permission', origin: 'https://pt.example' };
     renderPopup(root, state, actions());
@@ -70,8 +85,10 @@ describe('renderPopup', () => {
     const pageChecks = [...root.querySelectorAll<HTMLInputElement>('input[data-page-selected]')];
     expect(pageChecks).toHaveLength(2);
     expect(pageChecks.every((input) => input.checked)).toBe(true);
-    expect(root.textContent).toContain('数据来自 pt.example');
-    expect(root.textContent).toContain('仅使用当前页面');
+    expect(root.querySelector('[data-site-context]')?.textContent).toContain('pt.example');
+    expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
+    expect(root.querySelector('[data-home-guide]')).toBeNull();
+    expect(root.querySelector('h2')?.textContent).toBe('站点信息');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
     expect(handlers.onRefresh).toHaveBeenCalledOnce();
   });

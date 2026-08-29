@@ -39,6 +39,9 @@ const architectureNames: Record<ArchitectureId, string> = {
   unknown: '未知架构',
 };
 
+const PROJECT_URL = 'https://gitee.com/Kxmrg/pocket-qt-app';
+const LICENSE_URL = 'https://pocket.kxmrg.com/user/licenses';
+
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -48,11 +51,31 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#039;');
 }
 
-function header(eyebrow: string, title: string, detail = ''): string {
-  return `<header class="masthead">
-    <div class="brand-mark" aria-hidden="true"><span>P</span></div>
-    <div class="masthead-copy"><p class="eyebrow">${escapeHtml(eyebrow)}</p><h1>${escapeHtml(title)}</h1>${detail ? `<p>${escapeHtml(detail)}</p>` : ''}</div>
+function icon(name: 'arrow' | 'check' | 'chevron' | 'external' | 'lock' | 'plus' | 'refresh' | 'remove' | 'shield'): string {
+  const paths: Record<typeof name, string> = {
+    arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    check: '<path d="m5 12 4 4L19 6"/>',
+    chevron: '<path d="m7 10 5 5 5-5"/>',
+    external: '<path d="M14 5h5v5M10 14 19 5M19 13v6H5V5h6"/>',
+    lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/>',
+    remove: '<path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/>',
+    shield: '<path d="M12 3 5 6v5c0 4.6 2.9 8 7 10 4.1-2 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
+  };
+  return `<svg class="icon icon-${name}" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name]}</svg>`;
+}
+
+function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
+  return `<header class="app-header">
+    <div class="app-brand"><span class="app-mark" aria-hidden="true">P</span><div><strong>${escapeHtml(options.title ?? 'Pocket PT')}</strong>${options.detail ? `<span>${escapeHtml(options.detail)}</span>` : ''}</div></div>
+    ${options.action ?? ''}
   </header>`;
+}
+
+function sourceHost(sourceOrigin?: string): string {
+  if (!sourceOrigin) return '当前页面';
+  try { return new URL(sourceOrigin).host; } catch { return sourceOrigin; }
 }
 
 function errorFor(errors: Record<string, string>, field: string): string {
@@ -103,13 +126,13 @@ function pageRows(draft: SiteDraft): string {
   return draft.pages.map((page, index) => `<article class="page-row">
     <div class="page-select">
       <input id="page-selected-${index}" data-page-selected="${index}" type="checkbox" ${page.selected ? 'checked' : ''}>
-      <label for="page-selected-${index}">导入页面 ${index + 1}</label>
+      <label for="page-selected-${index}">页面 ${index + 1}</label>
     </div>
     <div class="page-grid">
-      <div class="field compact"><label for="page-name-${index}">页面名称</label><input id="page-name-${index}" data-page-field="name" data-page-index="${index}" value="${escapeHtml(page.name)}"></div>
-      <div class="field compact path"><label for="page-path-${index}">页面路径</label><input id="page-path-${index}" data-page-field="path" data-page-index="${index}" value="${escapeHtml(page.path)}" spellcheck="false"></div>
-      <button type="button" class="remove-page" data-page-remove="${index}" aria-label="删除页面 ${index + 1}">删除</button>
-      <div class="field compact page-tags"><label for="page-tags-${index}">页面标签（可选）</label><input id="page-tags-${index}" data-page-field="tags" data-page-index="${index}" value="${escapeHtml(page.tags ?? '')}" placeholder="多个标签用英文逗号分隔"></div>
+      <div class="field compact"><label for="page-name-${index}">名称</label><input id="page-name-${index}" data-page-field="name" data-page-index="${index}" value="${escapeHtml(page.name)}"></div>
+      <div class="field compact path"><label for="page-path-${index}">路径</label><input id="page-path-${index}" data-page-field="path" data-page-index="${index}" value="${escapeHtml(page.path)}" spellcheck="false"></div>
+      <button type="button" class="icon-button remove-page" data-page-remove="${index}" aria-label="删除页面 ${index + 1}">${icon('remove')}</button>
+      <div class="field compact page-tags"><label for="page-tags-${index}">标签（可选）</label><input id="page-tags-${index}" data-page-field="tags" data-page-index="${index}" value="${escapeHtml(page.tags ?? '')}" placeholder="使用英文逗号分隔"></div>
     </div>
   </article>`).join('');
 }
@@ -123,26 +146,26 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
     : credentialField('token', tokenLabel, draft.token, 'token', state);
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
-    ${header('SITE TRANSFER / 01', draft.name || '检查站点配置', `${architectureNames[draft.architecture]} · 本地处理`)}
-    <div class="source-bar"><span>数据来自 ${escapeHtml(state.sourceOrigin ? new URL(state.sourceOrigin).host : '当前页面')}</span><button type="button" class="secondary compact-button" data-action="refresh">刷新数据</button></div>
+    ${appHeader({ title: '站点导入', action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
+    <div class="site-context" data-site-context><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(sourceHost(state.sourceOrigin))}</strong><span class="architecture-badge">${escapeHtml(architectureNames[draft.architecture])}</span></div>
     <form id="site-form" novalidate>
-      <section class="panel"><div class="section-heading"><span>01</span><div><h2>基础信息</h2><p>确认识别结果和请求身份</p></div></div>
+      <section class="panel form-section"><div class="section-heading"><h2>站点信息</h2></div>
         <div class="field-grid">${architectureSelect(draft, errors)}
         ${regularField('site-name', '站点名称', draft.name, 'name', { error: errors.name })}
         ${regularField('site-address', '站点地址', draft.address, 'address', { error: errors.address })}
         ${regularField('user-agent', 'User-Agent', draft.userAgent ?? '', 'userAgent', { error: errors.userAgent })}</div>
       </section>
-      <section class="panel sensitive-panel"><div class="section-heading"><span>02</span><div><h2>登录信息</h2><p>仅保留在当前侧边栏内存中</p></div></div>
+      <section class="panel form-section sensitive-panel"><div class="section-heading"><h2>登录信息</h2>${icon('lock')}</div>
         ${credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state)}
         ${tokenField}
         ${credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state)}
       </section>
-      <section class="panel pages-panel"><div class="section-heading"><span>03</span><div><h2>种子页面</h2><p>仅使用当前页面，可自行修改或新增</p></div></div>
+      <section class="panel form-section pages-panel"><div class="section-heading"><h2>页面</h2></div>
         <div class="page-list">${pageRows(draft)}</div>
         ${errorFor(errors, 'pages')}
-        <button class="secondary full" type="button" data-action="add-page">＋ 新增页面</button>
+        <button class="add-page" type="button" data-action="add-page">${icon('plus')}添加页面</button>
       </section>
-      <details class="panel advanced"><summary>高级设置 <span>标签、权重与聚合搜索</span></summary>
+      <details class="panel advanced"><summary><span>高级设置</span>${icon('chevron')}</summary>
         <div class="advanced-body">
           ${regularField('tags', '站点标签', draft.tags ?? '', 'tags', { placeholder: '多个标签用英文逗号分隔' })}
           ${regularField('download-tags', '下载器标签', draft.downloadTags ?? '', 'downloadTags')}
@@ -150,26 +173,62 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
           <div class="check-field"><input id="search" data-field="search" type="checkbox" ${draft.search ? 'checked' : ''}><label for="search">参与聚合搜索</label></div>
         </div>
       </details>
-      <aside class="security-note"><strong>LOCAL ONLY</strong><p>配置不会上传或保存。生成的二维码包含登录凭据，请勿分享。</p></aside>
       ${errors.payload ? `<p class="payload-error" data-payload-error role="alert">${escapeHtml(errors.payload)}</p>` : ''}
-      <div class="action-dock"><button type="button" class="primary" data-action="generate" ${invalid ? 'disabled' : ''}>生成二维码 <span>→</span></button></div>
+      <div class="action-dock"><button type="button" class="primary" data-action="generate" ${invalid ? 'disabled' : ''}>生成二维码${icon('arrow')}</button></div>
     </form>
+  </div>`;
+}
+
+function homeView(): string {
+  return `<div class="shell home-shell">
+    ${appHeader({ title: 'Pocket PT', detail: '站点导入' })}
+    <section class="home-hero">
+      <span class="hero-mark">${icon('arrow')}</span>
+      <h1>快速导入 PT 站点</h1>
+      <p>从当前已登录页面读取配置，生成二维码后在手机端导入。</p>
+      <button class="primary home-read" type="button" data-action="read">读取当前页面${icon('arrow')}</button>
+    </section>
+    <section class="home-section" data-home-guide>
+      <div class="home-section-title"><h2>使用方法</h2><span>3 步完成</span></div>
+      <ol class="guide-list">
+        <li><span>1</span><p><strong>打开并登录 PT 站点</strong><small>停留在需要导入的页面</small></p></li>
+        <li><span>2</span><p><strong>读取并确认配置</strong><small>可手动修改识别结果</small></p></li>
+        <li><span>3</span><p><strong>生成二维码</strong><small>使用 Pocket PT 扫码导入</small></p></li>
+      </ol>
+    </section>
+    <section class="home-section" data-home-features>
+      <div class="home-section-title"><h2>插件功能</h2></div>
+      <div class="feature-grid">
+        <div><span>${icon('check')}</span><strong>自动识别</strong><small>站点架构与地址</small></div>
+        <div><span>${icon('lock')}</span><strong>读取凭据</strong><small>Cookie 与 Passkey</small></div>
+        <div><span>${icon('refresh')}</span><strong>手动校正</strong><small>所有字段均可编辑</small></div>
+        <div><span>${icon('arrow')}</span><strong>扫码导入</strong><small>生成手机端二维码</small></div>
+      </div>
+    </section>
+    <section class="security-card" data-home-security>
+      <span class="security-icon">${icon('shield')}</span>
+      <div><h2>数据安全</h2><p>所有数据仅在本机处理，不上传、不保存。二维码包含登录凭据，请勿分享。</p></div>
+    </section>
+    <nav class="resource-links" aria-label="项目相关链接">
+      <a data-home-link="project" href="${PROJECT_URL}" target="_blank" rel="noreferrer">项目地址${icon('external')}</a>
+      <a data-home-link="license" href="${LICENSE_URL}" target="_blank" rel="noreferrer">授权管理${icon('external')}</a>
+    </nav>
   </div>`;
 }
 
 function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'ready' }>): void {
   if (state.kind === 'idle') {
-    root.innerHTML = `<div class="shell state-shell idle-shell">${header('POCKET PT', '导入当前站点', '仅在你点击后读取页面')}<div class="permission-card"><p>打开或切换到需要导入的 PT 页面，再主动读取当前页面。侧边栏会在切换标签页时保持打开。</p><button class="primary" type="button" data-action="read">读取当前页面 <span>→</span></button></div></div>`;
+    root.innerHTML = homeView();
   } else if (state.kind === 'loading') {
-    root.innerHTML = `<div class="shell state-shell" aria-live="polite">${header('SITE TRANSFER', '正在读取站点')}<div class="scanner"><i></i></div><p>${escapeHtml(state.message)}</p></div>`;
+    root.innerHTML = `<div class="shell state-shell" aria-live="polite">${appHeader({ title: '站点导入' })}<section class="state-card"><div class="loading-ring" aria-hidden="true"></div><h1>正在读取</h1><p>${escapeHtml(state.message)}</p></section></div>`;
   } else if (state.kind === 'permission') {
-    root.innerHTML = `<div class="shell state-shell">${header('PERMISSION / SITE', '允许读取当前站点', state.origin)}<div class="permission-card"><p>Chrome 当前阻止了本站访问。允许后才能读取页面和完整 Cookie，生成手机端配置。</p><button class="primary" type="button" data-action="permission">允许读取本站 <span>→</span></button></div></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: '站点导入' })}<section class="state-card"><span class="state-icon">${icon('lock')}</span><h1>需要站点权限</h1><p>${escapeHtml(state.origin)}</p><button class="primary" type="button" data-action="permission">允许读取本站${icon('arrow')}</button></section></div>`;
   } else if (state.kind === 'unsupported') {
-    root.innerHTML = `<div class="shell state-shell">${header('ARCHITECTURE', architectureNames[state.detection.id])}<div class="unsupported-mark">暂不支持</div><p>Pocket PT 当前还不能导入此架构。</p><ul class="reason-list">${state.detection.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><button class="secondary" type="button" data-action="retry">重新识别</button></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: '站点导入' })}<section class="state-card"><span class="state-icon state-icon-muted">${architectureNames[state.detection.id].slice(0, 1)}</span><span class="status-badge">暂不支持</span><h1>${architectureNames[state.detection.id]}</h1><ul class="reason-list">${state.detection.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><button class="secondary" type="button" data-action="retry">重新识别</button></section></div>`;
   } else if (state.kind === 'error') {
-    root.innerHTML = `<div class="shell state-shell">${header('COLLECTION ERROR', '未能读取站点')}<p role="alert">${escapeHtml(state.message)}</p><button class="primary" type="button" data-action="retry">重试</button></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: '站点导入' })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><p role="alert">${escapeHtml(state.message)}</p><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {
-    root.innerHTML = `<div class="shell qr-shell ${state.enlarged ? 'is-enlarged' : ''}">${header('SITE TRANSFER / 02', '扫码导入', `${state.draft.name} · ${architectureNames[state.draft.architecture]}`)}<div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket PT 站点导入二维码"></canvas><span class="corner top-left"></span><span class="corner bottom-right"></span></div><div class="payload-meta"><span>压缩数据</span><strong>${state.payload.compressedBytes} B</strong></div><aside class="danger-note"><strong>敏感凭据</strong><p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">← 返回修改</button><button class="primary" type="button" data-action="enlarge">${state.enlarged ? '恢复大小' : '放大二维码'}</button></div></div>`;
+    root.innerHTML = `<div class="shell qr-shell ${state.enlarged ? 'is-enlarged' : ''}">${appHeader({ title: '扫码导入', detail: state.draft.name })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket PT 站点导入二维码"></canvas></div><div class="payload-meta"><span>${architectureNames[state.draft.architecture]}</span><strong>${state.payload.compressedBytes} B</strong></div></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button><button class="primary" type="button" data-action="enlarge">${state.enlarged ? '恢复大小' : '放大二维码'}</button></div></div>`;
   }
 }
 

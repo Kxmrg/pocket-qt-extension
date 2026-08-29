@@ -18,10 +18,7 @@
       architecture: 'nexusphp', scheme: 0, name: '星海 PT', address: 'https://pt.example.com',
       cookie: 'uid=42; pass=secret-session-value',
       pages: [
-        { name: '综合', path: '/torrents.php', tags: null, selected: true },
-        { name: '电影', path: '/torrents.php?cat=401', tags: null, selected: true },
-        { name: '电视剧', path: '/torrents.php?cat=402', tags: null, selected: true },
-        { name: '音乐', path: '/torrents.php?cat=406', tags: null, selected: true },
+        { name: '种子列表', path: '/torrents.php', tags: null, selected: true },
       ],
       passkey: 'optional-passkey', userAgent: navigator.userAgent, tags: null, downloadTags: null,
       widget: 1, token: null, search: true, top: null, fieldWarnings: {}, alternatives: {},
@@ -45,13 +42,14 @@
       idle: { kind: 'idle' },
       ready: { kind: 'ready', draft, errors: previewErrors, revealed: new Set(), sourceOrigin: params.get('arch') === 'mtorrent' ? 'https://kp.m-team.cc' : 'https://pt.example.com' },
       permission: { kind: 'permission', origin: 'https://pt.example.com' },
+      error: { kind: 'error', message: '请确认当前页面已完成登录，然后重试。' },
       unsupported: { kind: 'unsupported', detection: { id: 'unit3d', supported: false, confidence: 'certain', reasons: ['检测到 UNIT3D 标识', '检测到 UNIT3D 种子路由'] } },
       qr: { kind: 'qr', draft, payload: { text: 'preview-only', sourceBytes: 512, compressedBytes: 284 }, enlarged: false },
     };
     renderPopup(document.querySelector('#app'), states[kind] || states.ready, actions);
     if (kind === 'qr') {
       await QRCode.toCanvas(document.querySelector('#qr-canvas'), 'pocket-pt://import/site?v=1&data=preview', {
-        width: 280, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#102a2b', light: '#fffdf6' },
+        width: 280, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#17213a', light: '#ffffff' },
       });
     }
   </script>
