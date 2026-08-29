@@ -126,7 +126,7 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 .page-row-heading .remove-page { width: 38px; height: 38px; }
 .page-row-name { width: 100%; }
 .page-row-path { width: 100%; }
-.page-row-name + .page-row-path { margin-top: 11px; }
+.page-row-name + .page-row-path { margin-top: 16px; }
 .field.compact { margin: 0; }
 .field.compact input { min-height: 42px; padding: 9px 10px; font-size: 12px; }
 .page-row-path input { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
