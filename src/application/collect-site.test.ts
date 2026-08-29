@@ -46,6 +46,31 @@ describe('collectSiteDraft', () => {
     expect(result.draft).toMatchObject({ scheme: 0, cookie: 'session=secret', address: 'https://pt.example' });
   });
 
+  it('uses page-visible cookies when the Chrome Cookie API returns an empty list', async () => {
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({ ...nexusSnapshot(), documentCookie: 'session=page-secret; theme=dark' }),
+      readCookies: async () => [],
+    }));
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.draft.cookie).toBe('session=page-secret; theme=dark');
+  });
+
+  it('keeps complete API cookies and appends only missing page-visible cookies', async () => {
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({ ...nexusSnapshot(), documentCookie: 'session=stale; theme=dark' }),
+      readCookies: async () => [
+        { name: 'session', value: 'api-secret', domain: 'pt.example', path: '/', secure: true },
+        { name: 'uid', value: '42', domain: 'pt.example', path: '/', secure: true },
+      ],
+    }));
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.draft.cookie).toBe('session=api-secret; uid=42; theme=dark');
+  });
+
   it('uses the mTorrent profile UUID and leaves the laboratory token for manual entry', async () => {
     const result = await collectSiteDraft(deps({
       getContext: async () => ({ tabId: 77, url: 'https://kp.m-team.cc/browse', origin: 'https://kp.m-team.cc', hasPermission: true }),

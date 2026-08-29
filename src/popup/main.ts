@@ -104,6 +104,7 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
+        token: architecture === 'nexusphp' ? null : draft.token,
         pages,
         fieldWarnings: {},
       };

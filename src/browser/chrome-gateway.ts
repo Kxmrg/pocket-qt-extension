@@ -22,12 +22,34 @@ export function toOriginPattern(value: string): string {
   return `${url.origin}/*`;
 }
 
+function grantedPatternCoversUrl(pattern: string, url: URL): boolean {
+  if (pattern === '<all_urls>') return true;
+  const match = /^(\*|https?):\/\/([^/]+)\//i.exec(pattern);
+  if (!match) return false;
+  const scheme = match[1];
+  const hostPatternValue = match[2];
+  if (!scheme || !hostPatternValue) return false;
+  if (scheme !== '*' && `${scheme.toLowerCase()}:` !== url.protocol) return false;
+
+  const hostPattern = hostPatternValue.toLowerCase();
+  const targetHost = url.host.toLowerCase();
+  if (hostPattern === '*') return true;
+  if (hostPattern.startsWith('*.')) {
+    const baseHost = hostPattern.slice(2);
+    const targetHostname = url.hostname.toLowerCase();
+    return targetHostname === baseHost || targetHostname.endsWith(`.${baseHost}`);
+  }
+  return hostPattern === targetHost;
+}
+
 export async function getActivePageContext(): Promise<ActivePageContext> {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id || !tab.url) throw new Error('未找到当前页面，请重新打开站点后重试');
-  const pattern = toOriginPattern(tab.url);
-  const hasPermission = await chrome.permissions.contains({ origins: [pattern] });
-  return { tabId: tab.id, url: tab.url, origin: new URL(tab.url).origin, hasPermission };
+  toOriginPattern(tab.url);
+  const url = new URL(tab.url);
+  const granted = await chrome.permissions.getAll();
+  const hasPermission = (granted.origins ?? []).some((pattern) => grantedPatternCoversUrl(pattern, url));
+  return { tabId: tab.id, url: tab.url, origin: url.origin, hasPermission };
 }
 
 export async function requestCurrentOrigin(origin: string): Promise<boolean> {

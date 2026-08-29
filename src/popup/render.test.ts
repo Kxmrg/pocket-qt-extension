@@ -65,11 +65,13 @@ describe('renderPopup', () => {
     expect((root.querySelector('#site-address') as HTMLInputElement).value).toBe('https://pt.example');
     expect((root.querySelector('#user-agent') as HTMLInputElement).value).toBe('Browser UA');
     expect((root.querySelector('#cookie') as HTMLInputElement).type).toBe('password');
+    expect(root.querySelector('#token')).toBeNull();
     expect(root.querySelector('#page-tags-0')).not.toBeNull();
     const pageChecks = [...root.querySelectorAll<HTMLInputElement>('input[data-page-selected]')];
     expect(pageChecks).toHaveLength(2);
     expect(pageChecks.every((input) => input.checked)).toBe(true);
     expect(root.textContent).toContain('数据来自 pt.example');
+    expect(root.textContent).toContain('仅使用当前页面');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
     expect(handlers.onRefresh).toHaveBeenCalledOnce();
   });

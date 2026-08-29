@@ -1,5 +1,10 @@
 import { adaptSite, type SiteDraft } from '../domain/adapt-site';
-import { formatCookieHeader, type CookieLike } from '../domain/cookies';
+import {
+  formatCookieHeader,
+  mergeCookieHeaders,
+  parseCookieHeader,
+  type CookieLike,
+} from '../domain/cookies';
 import { detectArchitecture } from '../domain/detect-architecture';
 import type { DetectionResult, PageSnapshot } from '../domain/types';
 
@@ -34,12 +39,16 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
     if (detection.id === 'gazelle' || detection.id === 'unit3d') {
       return { state: 'unsupported', detection };
     }
-    const cookieHeader = formatCookieHeader(cookies, context.url);
+    const cookieHeader = mergeCookieHeaders(
+      formatCookieHeader(cookies, context.url),
+      snapshot.documentCookie ?? '',
+    );
     const snapshotWithCookieCandidates: PageSnapshot = {
       ...snapshot,
       candidates: [
         ...snapshot.candidates,
-        ...cookies.map((cookie) => ({ key: cookie.name, value: cookie.value, source: 'cookie' })),
+        ...parseCookieHeader(cookieHeader)
+          .map((cookie) => ({ key: cookie.name, value: cookie.value, source: 'cookie' })),
       ],
     };
     return {

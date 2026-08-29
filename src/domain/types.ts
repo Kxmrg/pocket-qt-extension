@@ -30,6 +30,7 @@ export interface PageSnapshot {
   host: string;
   title: string;
   userAgent: string;
+  documentCookie?: string;
   meta: Array<{ name: string; property: string; content: string }>;
   resources: string[];
   links: PageLink[];

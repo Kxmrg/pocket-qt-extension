@@ -70,6 +70,7 @@ export function collectPageSnapshot(): PageSnapshot {
     host: current.hostname,
     title: limit(document.title, 500),
     userAgent: limit(navigator.userAgent, 1_000),
+    documentCookie: document.cookie,
     meta,
     resources,
     links,

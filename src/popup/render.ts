@@ -118,6 +118,9 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
   const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? '令牌' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
   const cookieLabel = draft.architecture === 'mtorrent' ? 'UUID' : 'Cookie';
+  const tokenField = draft.architecture === 'nexusphp'
+    ? ''
+    : credentialField('token', tokenLabel, draft.token, 'token', state);
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
     ${header('SITE TRANSFER / 01', draft.name || '检查站点配置', `${architectureNames[draft.architecture]} · 本地处理`)}
@@ -131,10 +134,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
       </section>
       <section class="panel sensitive-panel"><div class="section-heading"><span>02</span><div><h2>登录信息</h2><p>仅保留在当前侧边栏内存中</p></div></div>
         ${credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state)}
-        ${credentialField('token', tokenLabel, draft.token, 'token', state)}
+        ${tokenField}
         ${credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state)}
       </section>
-      <section class="panel pages-panel"><div class="section-heading"><span>03</span><div><h2>种子页面</h2><p>已识别 ${draft.pages.length} 个，默认全部导入</p></div></div>
+      <section class="panel pages-panel"><div class="section-heading"><span>03</span><div><h2>种子页面</h2><p>仅使用当前页面，可自行修改或新增</p></div></div>
         <div class="page-list">${pageRows(draft)}</div>
         ${errorFor(errors, 'pages')}
         <button class="secondary full" type="button" data-action="add-page">＋ 新增页面</button>

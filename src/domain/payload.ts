@@ -48,7 +48,7 @@ export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
       tags: draft.tags,
       downloadTags: draft.downloadTags,
       widget: draft.widget,
-      token: draft.token,
+      token: draft.scheme === 0 ? null : draft.token,
       search: draft.search,
       top: draft.top,
     },

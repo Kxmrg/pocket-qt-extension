@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readCookies, toOriginPattern } from './chrome-gateway';
+import { getActivePageContext, readCookies, toOriginPattern } from './chrome-gateway';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -11,6 +11,37 @@ describe('toOriginPattern', () => {
 
   it.each(['chrome://extensions', 'file:///tmp/page.html', 'about:blank'])('rejects unsupported URL %s', (url) => {
     expect(() => toOriginPattern(url)).toThrow('请在普通 HTTP 或 HTTPS 站点中使用');
+  });
+
+  it('does not treat temporary activeTab access as an explicit Cookie host grant', async () => {
+    vi.stubGlobal('chrome', {
+      tabs: { query: vi.fn().mockResolvedValue([{ id: 42, url: 'https://hhanclub.net/torrents.php' }]) },
+      permissions: {
+        contains: vi.fn().mockResolvedValue(true),
+        getAll: vi.fn().mockResolvedValue({ permissions: ['activeTab'], origins: [] }),
+      },
+    });
+
+    await expect(getActivePageContext()).resolves.toMatchObject({
+      origin: 'https://hhanclub.net',
+      hasPermission: false,
+    });
+  });
+
+  it.each([
+    ['https://hhanclub.net/*'],
+    ['https://*/*'],
+    ['<all_urls>'],
+  ])('accepts an explicit host grant covering the active site: %s', async (originGrant) => {
+    vi.stubGlobal('chrome', {
+      tabs: { query: vi.fn().mockResolvedValue([{ id: 42, url: 'https://hhanclub.net/torrents.php' }]) },
+      permissions: {
+        contains: vi.fn().mockResolvedValue(true),
+        getAll: vi.fn().mockResolvedValue({ permissions: ['activeTab'], origins: [originGrant] }),
+      },
+    });
+
+    await expect(getActivePageContext()).resolves.toMatchObject({ hasPermission: true });
   });
 
   it('reads cookies from the store that owns the active tab', async () => {

@@ -6,6 +6,10 @@ afterEach(() => {
   document.body.innerHTML = '';
   localStorage.clear();
   sessionStorage.clear();
+  for (const cookie of document.cookie.split(';')) {
+    const name = cookie.split('=')[0]?.trim();
+    if (name) document.cookie = `${name}=; Max-Age=0; path=/`;
+  }
 });
 
 describe('collectPageSnapshot', () => {
@@ -28,6 +32,7 @@ describe('collectPageSnapshot', () => {
     `;
     localStorage.setItem('accessToken', 'a'.repeat(5_000));
     sessionStorage.setItem('uid', '42');
+    document.cookie = 'session=page-secret; path=/';
 
     const result = collectPageSnapshot();
 
@@ -39,6 +44,7 @@ describe('collectPageSnapshot', () => {
     expect(result.storage.find((item) => item.key === 'accessToken')?.value).toHaveLength(4_096);
     expect(result.candidates).toContainEqual({ key: 'csrf_token', value: 'field-csrf', source: 'input' });
     expect(result.candidates).toContainEqual({ key: 'data-uid', value: '42', source: 'attribute' });
+    expect(result.documentCookie).toBe('session=page-secret');
     expect(JSON.stringify(result)).not.toContain('password-secret');
     expect(result.links.some((link) => link.href.includes('outside.example'))).toBe(false);
   });

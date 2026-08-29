@@ -53,6 +53,10 @@ describe('Pocket PT import payload', () => {
     expect(buildImportPayload(draft())).toEqual(expected);
   });
 
+  it('always removes a stale token from NexusPHP payloads', () => {
+    expect(buildImportPayload(draft({ token: 'must-not-be-sent' })).site.token).toBeNull();
+  });
+
   it('round trips the versioned raw-deflate Base64URL payload', () => {
     const encoded = encodeImportPayload(draft());
     expect(encoded.text.startsWith('pocket-pt://import/site?v=1&data=')).toBe(true);

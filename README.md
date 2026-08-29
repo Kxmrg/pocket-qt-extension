@@ -1,6 +1,6 @@
 # Pocket PT 站点导入 Chrome 扩展
 
-扩展使用 Chrome 侧边栏。用户点击“读取当前页面”后，扩展才会在本地识别站点架构，读取当前站点 Cookie、User-Agent、特殊 Token/UUID/UID/Passkey 以及全部种子页面。用户确认和编辑后，扩展生成供 Pocket PT 手机端导入的二维码。
+扩展使用 Chrome 侧边栏。用户点击“读取当前页面”后，扩展才会在本地识别站点架构，读取当前站点 Cookie、User-Agent、特殊 Token/UUID/UID/Passkey，并把当前网址的路径作为唯一种子页面。用户可以自行修改或新增页面，确认后生成供 Pocket PT 手机端导入的二维码。
 
 当前阶段只包含 Chrome 扩展。手机端扫码导入将在下一阶段实现。
 
@@ -38,6 +38,8 @@ npm run build
 8. 切换标签页不会关闭侧边栏，需要更新数据时点击顶部“刷新数据”。
 
 mTorrent 会从首页用户名链接 `/profile/detail/<UUID>` 提取 UUID。令牌不会自动读取，请前往 M-Team 控制台实验室复制后手动填写。
+
+NexusPHP 不使用 Token，扩展不会显示或写入 Token。Cookie 优先通过 Chrome Cookie API 读取，并用当前页面可见 Cookie 补充缺失项；首次读取必须明确授予当前域名权限。
 
 修改源代码后，需要重新执行 `npm run build`，再到扩展管理页面点击刷新。
 
