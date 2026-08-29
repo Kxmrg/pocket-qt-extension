@@ -86,6 +86,16 @@ describe('renderPopup', () => {
     expect([...root.querySelectorAll('button')].some((button) => button.textContent?.includes('生成二维码'))).toBe(false);
   });
 
+  it('uses the plugin header and omits technical guidance on the read error page', () => {
+    renderPopup(root, { kind: 'error', message: '请在普通 HTTP 或 HTTPS 站点中使用' }, actions());
+
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Pt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
+    expect(root.querySelector('h1')?.textContent).toBe('未能读取站点');
+    expect(root.textContent).not.toContain('请在普通 HTTP 或 HTTPS 站点中使用');
+    expect(root.querySelector('[role="alert"]')).toBeNull();
+  });
+
   it('renders editable fields, masked credentials, and simplified page rows', () => {
     const handlers = actions();
     renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set(), sourceOrigin: 'https://pt.example' }, handlers);
