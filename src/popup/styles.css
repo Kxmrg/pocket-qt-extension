@@ -172,7 +172,7 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 .qr-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .qr-frame { display: grid; width: 100%; margin: 0 auto; padding: max(14px, 4%); background: #fff; place-items: center; }
 .qr-frame canvas { display: block; width: 100% !important; min-width: 280px; max-width: 640px; height: auto !important; aspect-ratio: 1; image-rendering: pixelated; }
-.qr-site-info { display: grid; margin: 0; padding: 0 max(14px, 4%) max(14px, 4%); gap: 16px; }
+.qr-site-info { display: grid; margin: 6px 0 0; padding: 0 max(14px, 4%) max(14px, 4%); gap: 16px; }
 .qr-site-info > div { display: grid; min-width: 0; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 20px; }
 .qr-site-info dt { color: var(--text-muted); font-size: 13px; font-weight: 650; line-height: 1.5; }
 .qr-site-info dd { min-width: 0; margin: 0; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 650; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
