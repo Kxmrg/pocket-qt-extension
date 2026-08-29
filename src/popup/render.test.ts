@@ -47,15 +47,17 @@ describe('renderPopup', () => {
   it('renders the compact unread home in its intended reading order', () => {
     renderPopup(root, { kind: 'idle' }, actions());
 
-    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket PT');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Pt');
     expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v0.4.0');
     expect(root.querySelectorAll('[data-home-guide] li')).toHaveLength(4);
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点，停留在种子列表页面');
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('点击开始读取站点数据');
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('手动修改补充站点信息');
-    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('生成二维码，使用 Pocket PT 扫描添加站点');
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('生成二维码，使用 Pocket Qt 扫码添加站点');
     expect(root.querySelector('[data-home-features]')).toBeNull();
     expect(root.querySelector('[data-home-security]')?.textContent).toContain('仅在本机处理');
+    expect(root.querySelector('[data-home-guide]')?.classList).toContain('home-card');
+    expect(root.querySelector('[data-home-security]')?.classList).toContain('home-card');
 
     const project = root.querySelector<HTMLAnchorElement>('a[data-home-link="project"]');
     const license = root.querySelector<HTMLAnchorElement>('a[data-home-link="license"]');

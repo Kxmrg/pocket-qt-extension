@@ -189,23 +189,23 @@ function homeView(): string {
   return `<div class="shell home-shell">
     <section class="home-brand" data-home-brand data-home-section="brand">
       <span class="home-brand-mark" aria-hidden="true">P</span>
-      <h1>Pocket PT</h1>
+      <h1>Pocket Pt</h1>
       <p>站点导入插件 <strong>v${escapeHtml(extensionVersion())}</strong></p>
     </section>
     <nav class="resource-links" data-home-section="links" aria-label="项目相关链接">
       <a data-home-link="project" href="${PROJECT_URL}" target="_blank" rel="noreferrer">项目地址${icon('external')}</a>
       <a data-home-link="license" href="${LICENSE_URL}" target="_blank" rel="noreferrer">授权管理${icon('external')}</a>
     </nav>
-    <section class="home-guide" data-home-guide data-home-section="guide">
+    <section class="home-card home-guide" data-home-guide data-home-section="guide">
       <h2>使用方法</h2>
       <ol class="guide-list">
         <li><span>1</span><strong>打开并登录 PT 站点，停留在种子列表页面</strong></li>
         <li><span>2</span><strong>点击开始读取站点数据</strong></li>
         <li><span>3</span><strong>手动修改补充站点信息</strong></li>
-        <li><span>4</span><strong>生成二维码，使用 Pocket PT 扫描添加站点</strong></li>
+        <li><span>4</span><strong>生成二维码，使用 Pocket Qt 扫码添加站点</strong></li>
       </ol>
     </section>
-    <section class="security-card" data-home-security data-home-section="security">
+    <section class="home-card security-card" data-home-security data-home-section="security">
       <span class="security-icon">${icon('shield')}</span>
       <div><h2>数据安全</h2><p>所有数据仅在本机处理，不上传、不保存。二维码包含登录凭据，请勿分享。</p></div>
     </section>

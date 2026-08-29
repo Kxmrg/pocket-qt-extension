@@ -64,16 +64,17 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 .resource-links a { display: flex; min-height: 46px; padding: 0 14px; align-items: center; justify-content: center; gap: 7px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); color: var(--text-secondary); background: var(--surface); font-size: 13px; font-weight: 650; }
 .resource-links a:hover { border-color: #aac0ec; color: var(--primary); background: var(--primary-soft); }
 .resource-links .icon { width: 15px; height: 15px; }
-.home-guide { margin-top: 30px; padding: 26px 0 24px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.home-card { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.home-guide { margin-top: 22px; padding: 24px; }
 .home-guide h2, .security-card h2 { margin: 0; color: var(--text); font-size: 18px; line-height: 1.4; letter-spacing: -.02em; }
 .guide-list { display: grid; gap: 14px; margin: 19px 0 0; padding: 0; list-style: none; }
 .guide-list li { display: flex; min-width: 0; align-items: center; gap: 12px; }
 .guide-list li > span { display: grid; width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; color: var(--primary); background: var(--primary-soft); font-size: 12px; font-weight: 800; place-items: center; }
-.guide-list strong { min-width: 0; overflow: hidden; color: var(--text); font-size: clamp(12px, 2.2vw, 14px); font-weight: 650; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
-.security-card { display: flex; margin: 26px 0 0; padding: 20px 0; align-items: flex-start; gap: 14px; border: 0; background: var(--surface); }
-.security-icon { display: grid; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 11px; color: var(--primary); background: var(--primary-soft); place-items: center; }
-.security-icon .icon { width: 20px; height: 20px; }
-.security-card p { margin: 6px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.7; }
+.guide-list strong { min-width: 0; overflow: hidden; color: var(--text); font-size: clamp(13px, 2.5vw, 16px); font-weight: 650; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
+.security-card { display: flex; margin: 14px 0 0; padding: 24px; align-items: flex-start; gap: 14px; }
+.security-icon { display: grid; width: 30px; height: 30px; flex: 0 0 30px; border-radius: 9px; color: var(--primary); background: var(--primary-soft); place-items: center; }
+.security-icon .icon { width: 17px; height: 17px; }
+.security-card p { margin: 6px 0 0; color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
 .home-action { margin-top: 22px; }
 .home-read { width: 100%; min-height: 52px !important; font-size: 15px !important; }
 
@@ -175,9 +176,13 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 
 @media (max-width: 420px) {
   .form-section { padding: 17px; }
+  .home-card { padding: 20px 14px; }
   .home-brand-mark { width: 64px; height: 64px; border-radius: 19px; font-size: 35px; }
   .home-brand h1 { font-size: 25px; }
   .resource-links a { padding-inline: 8px; font-size: 12px; }
+  .guide-list li { gap: 8px; }
+  .guide-list li > span { width: 28px; height: 28px; flex-basis: 28px; }
+  .security-icon { width: 28px; height: 28px; flex-basis: 28px; }
   .page-grid { grid-template-columns: minmax(0, 1fr) 42px; }
   .field.compact { grid-column: 1; }
   .field.compact.page-tags { grid-column: 1; }

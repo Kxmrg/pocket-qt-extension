@@ -1,4 +1,4 @@
-# Pocket PT 站点导入 Chrome 扩展
+# Pocket Pt 站点导入插件
 
 扩展使用 Chrome 侧边栏。用户点击“读取当前页面”后，扩展才会在本地识别站点架构，读取当前站点 Cookie、User-Agent、特殊 Token/UUID/UID/Passkey，并把当前网址的路径作为唯一种子页面。用户可以自行修改或新增页面，确认后生成供 Pocket PT 手机端导入的二维码。
 
