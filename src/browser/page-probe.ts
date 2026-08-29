@@ -43,8 +43,23 @@ export function collectPageSnapshot(): PageSnapshot {
       // Storage may be blocked by the site or browser privacy policy.
     }
   };
-  readStorage('local', window.localStorage);
-  readStorage('session', window.sessionStorage);
+  try {
+    readStorage('local', window.localStorage);
+  } catch {
+    // Accessing the Storage object itself can throw on privacy-restricted pages.
+  }
+  try {
+    readStorage('session', window.sessionStorage);
+  } catch {
+    // Accessing the Storage object itself can throw on privacy-restricted pages.
+  }
+
+  let documentCookie = '';
+  try {
+    documentCookie = document.cookie;
+  } catch {
+    // Chrome's Cookie API remains the primary source when page access is blocked.
+  }
 
   const candidates: PageSnapshot['candidates'] = [];
   for (const input of Array.from(document.querySelectorAll<HTMLInputElement>('input[name], input[id]')).slice(0, 500)) {
@@ -70,7 +85,7 @@ export function collectPageSnapshot(): PageSnapshot {
     host: current.hostname,
     title: limit(document.title, 500),
     userAgent: limit(navigator.userAgent, 1_000),
-    documentCookie: document.cookie,
+    documentCookie,
     meta,
     resources,
     links,

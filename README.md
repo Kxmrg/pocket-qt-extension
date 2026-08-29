@@ -39,7 +39,7 @@ npm run build
 
 mTorrent 会从首页用户名链接 `/profile/detail/<UUID>` 提取 UUID。令牌不会自动读取，请前往 M-Team 控制台实验室复制后手动填写。
 
-NexusPHP 不使用 Token，扩展不会显示或写入 Token。Cookie 优先通过 Chrome Cookie API 读取，并用当前页面可见 Cookie 补充缺失项；首次读取必须明确授予当前域名权限。
+NexusPHP 不使用 Token，扩展不会显示或写入 Token。Cookie 优先通过 Chrome Cookie API 按当前 URL 和域名读取、合并去重，再用当前页面可见 Cookie 补充缺失项；首次读取必须明确授予当前域名权限。站点禁止页面存储访问或 Cookie API 暂时失败时，架构和其他字段仍可继续读取。
 
 修改源代码后，需要重新执行 `npm run build`，再到扩展管理页面点击刷新。
 

@@ -55,6 +55,19 @@ describe('collectSiteDraft', () => {
     expect(result.state).toBe('ready');
     if (result.state !== 'ready') throw new Error('expected ready result');
     expect(result.draft.cookie).toBe('session=page-secret; theme=dark');
+    expect(result.draft.fieldWarnings.cookie).toContain('页面可见 Cookie');
+  });
+
+  it('explains when neither Chrome nor the current page returns a Cookie', async () => {
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({ ...nexusSnapshot(), documentCookie: '' }),
+      readCookies: async () => [],
+    }));
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.draft.cookie).toBe('');
+    expect(result.draft.fieldWarnings.cookie).toContain('确认已登录并允许读取本站');
   });
 
   it('keeps complete API cookies and appends only missing page-visible cookies', async () => {
@@ -69,6 +82,18 @@ describe('collectSiteDraft', () => {
     expect(result.state).toBe('ready');
     if (result.state !== 'ready') throw new Error('expected ready result');
     expect(result.draft.cookie).toBe('session=api-secret; uid=42; theme=dark');
+  });
+
+  it('keeps the site editable when the Chrome Cookie API fails', async () => {
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({ ...nexusSnapshot(), documentCookie: 'session=page-secret' }),
+      readCookies: async () => { throw new Error('Chrome cookie access denied'); },
+    }));
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.draft.cookie).toBe('session=page-secret');
+    expect(result.draft.fieldWarnings.cookie).toContain('Chrome 完整 Cookie');
   });
 
   it('uses the mTorrent profile UUID and leaves the laboratory token for manual entry', async () => {
@@ -106,8 +131,9 @@ describe('collectSiteDraft', () => {
     expect(result.draft).toMatchObject({ architecture: 'unknown', scheme: null, cookie: 'session=secret' });
   });
 
-  it('converts collection failures into a safe message', async () => {
+  it('identifies page-probe failures without exposing the underlying error', async () => {
     const result = await collectSiteDraft(deps({ readSnapshot: async () => { throw new Error('private-secret'); } }));
-    expect(result).toEqual({ state: 'error', message: '读取当前站点失败，请刷新页面后重试' });
+    expect(result).toEqual({ state: 'error', message: '页面数据读取失败（E_PAGE），请刷新站点页面后重试' });
+    expect(JSON.stringify(result)).not.toContain('private-secret');
   });
 });

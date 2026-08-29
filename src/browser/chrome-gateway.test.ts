@@ -63,4 +63,27 @@ describe('toOriginPattern', () => {
     expect(getAll).toHaveBeenCalledWith({ url: 'https://pt.example/torrents.php', storeId: 'incognito' });
     expect(cookies[0]?.name).toBe('c_secure_uid');
   });
+
+  it('falls back to a domain query when Chrome returns no cookies for the page URL', async () => {
+    const getAll = vi.fn()
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        { name: 'c_secure_pass', value: 'secret', domain: '.hhanclub.net', path: '/', secure: true },
+      ]);
+    vi.stubGlobal('chrome', {
+      cookies: {
+        getAllCookieStores: vi.fn().mockResolvedValue([{ id: 'default', tabIds: [42] }]),
+        getAll,
+      },
+    });
+
+    const cookies = await readCookies('https://hhanclub.net/torrents.php', 42);
+
+    expect(getAll).toHaveBeenNthCalledWith(1, {
+      url: 'https://hhanclub.net/torrents.php',
+      storeId: 'default',
+    });
+    expect(getAll).toHaveBeenNthCalledWith(2, { domain: 'hhanclub.net', storeId: 'default' });
+    expect(cookies.map((cookie) => cookie.name)).toEqual(['c_secure_pass']);
+  });
 });

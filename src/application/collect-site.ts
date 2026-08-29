@@ -28,16 +28,32 @@ export type CollectionResult =
   | { state: 'error'; message: string };
 
 export async function collectSiteDraft(deps: CollectionDeps): Promise<CollectionResult> {
+  let context: CollectionContext;
   try {
-    const context = await deps.getContext();
-    if (!context.hasPermission) return { state: 'permission-required', origin: context.origin };
-    const [snapshot, cookies] = await Promise.all([
-      deps.readSnapshot(),
-      deps.readCookies(context.url, context.tabId),
-    ]);
+    context = await deps.getContext();
+  } catch {
+    return { state: 'error', message: '当前标签页读取失败（E_CONTEXT），请切回站点页面后重试' };
+  }
+  if (!context.hasPermission) return { state: 'permission-required', origin: context.origin };
+
+  let snapshot: PageSnapshot;
+  try {
+    snapshot = await deps.readSnapshot();
+  } catch {
+    return { state: 'error', message: '页面数据读取失败（E_PAGE），请刷新站点页面后重试' };
+  }
+
+  try {
     const detection = detectArchitecture(snapshot);
     if (detection.id === 'gazelle' || detection.id === 'unit3d') {
       return { state: 'unsupported', detection };
+    }
+    let cookies: CookieLike[] = [];
+    let cookieReadFailed = false;
+    try {
+      cookies = await deps.readCookies(context.url, context.tabId);
+    } catch {
+      cookieReadFailed = true;
     }
     const cookieHeader = mergeCookieHeaders(
       formatCookieHeader(cookies, context.url),
@@ -51,12 +67,20 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
           .map((cookie) => ({ key: cookie.name, value: cookie.value, source: 'cookie' })),
       ],
     };
-    return {
-      state: 'ready',
-      detection,
-      draft: adaptSite({ detection, snapshot: snapshotWithCookieCandidates, cookieHeader }),
-    };
+    const draft = adaptSite({ detection, snapshot: snapshotWithCookieCandidates, cookieHeader });
+    if (detection.id !== 'mtorrent') {
+      if (cookieReadFailed) {
+        draft.fieldWarnings.cookie = cookieHeader
+          ? 'Chrome 完整 Cookie 读取失败，已使用页面可见 Cookie，请确认'
+          : 'Chrome 完整 Cookie 读取失败，请手动填写';
+      } else if (cookies.length === 0 && cookieHeader) {
+        draft.fieldWarnings.cookie = 'Chrome 未返回完整 Cookie，已使用页面可见 Cookie，请确认';
+      } else if (!cookieHeader) {
+        draft.fieldWarnings.cookie = 'Chrome 和当前页面都未返回 Cookie，请确认已登录并允许读取本站';
+      }
+    }
+    return { state: 'ready', detection, draft };
   } catch {
-    return { state: 'error', message: '读取当前站点失败，请刷新页面后重试' };
+    return { state: 'error', message: '站点数据解析失败（E_PARSE），请刷新页面后重试' };
   }
 }

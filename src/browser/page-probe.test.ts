@@ -1,7 +1,8 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { collectPageSnapshot } from './page-probe';
 
 afterEach(() => {
+  vi.restoreAllMocks();
   document.head.innerHTML = '';
   document.body.innerHTML = '';
   localStorage.clear();
@@ -47,5 +48,26 @@ describe('collectPageSnapshot', () => {
     expect(result.documentCookie).toBe('session=page-secret');
     expect(JSON.stringify(result)).not.toContain('password-secret');
     expect(result.links.some((link) => link.href.includes('outside.example'))).toBe(false);
+  });
+
+  it('still collects the page when browser privacy rules block storage and document cookies', () => {
+    vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    vi.spyOn(window, 'sessionStorage', 'get').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    vi.spyOn(document, 'cookie', 'get').mockImplementation(() => {
+      throw new DOMException('blocked', 'SecurityError');
+    });
+    document.title = 'Restricted PT';
+    document.body.innerHTML = '<a href="/torrents.php">种子</a>';
+
+    const result = collectPageSnapshot();
+
+    expect(result.title).toBe('Restricted PT');
+    expect(result.documentCookie).toBe('');
+    expect(result.storage).toEqual([]);
+    expect(result.links[0]?.href).toContain('/torrents.php');
   });
 });

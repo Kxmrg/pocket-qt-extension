@@ -72,8 +72,23 @@ export async function readCookies(url: string, tabId?: number): Promise<CookieLi
   const storeId = selectedTabId === undefined
     ? undefined
     : stores.find((store) => store.tabIds.includes(selectedTabId))?.id;
-  const cookies = await chrome.cookies.getAll(storeId ? { url, storeId } : { url });
-  return cookies.map((cookie) => ({
+  const hostname = new URL(url).hostname;
+  const cookieQueries = await Promise.allSettled([
+    chrome.cookies.getAll(storeId ? { url, storeId } : { url }),
+    chrome.cookies.getAll(storeId ? { domain: hostname, storeId } : { domain: hostname }),
+  ]);
+  const fulfilledQueries = cookieQueries
+    .filter((result): result is PromiseFulfilledResult<chrome.cookies.Cookie[]> => result.status === 'fulfilled');
+  if (fulfilledQueries.length === 0) throw new Error('Chrome Cookie API unavailable');
+
+  const uniqueCookies = new Map<string, chrome.cookies.Cookie>();
+  for (const result of fulfilledQueries) {
+    for (const cookie of result.value) {
+      const key = `${cookie.name}\u0000${cookie.domain}\u0000${cookie.path}`;
+      if (!uniqueCookies.has(key)) uniqueCookies.set(key, cookie);
+    }
+  }
+  return [...uniqueCookies.values()].map((cookie) => ({
     name: cookie.name,
     value: cookie.value,
     domain: cookie.domain,
