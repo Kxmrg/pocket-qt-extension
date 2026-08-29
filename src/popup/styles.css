@@ -170,9 +170,9 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 /* QR */
 .qr-shell { min-height: 100vh; }
 .qr-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
-.qr-frame { display: grid; width: 100%; margin: 0 auto; padding: 14px; background: #fff; place-items: center; }
+.qr-frame { display: grid; width: 100%; margin: 0 auto; padding: max(14px, 4%); background: #fff; place-items: center; }
 .qr-frame canvas { display: block; width: 100% !important; min-width: 280px; max-width: 640px; height: auto !important; aspect-ratio: 1; image-rendering: pixelated; }
-.qr-site-info { display: grid; margin: 8px 0 0; padding: 0 14px; gap: 16px; }
+.qr-site-info { display: grid; margin: 0; padding: 0 max(14px, 4%); gap: 16px; }
 .qr-site-info > div { display: grid; min-width: 0; grid-template-columns: 78px minmax(0, 1fr); align-items: center; gap: 20px; }
 .qr-site-info dt { color: var(--text-muted); font-size: 13px; font-weight: 650; line-height: 1.5; }
 .qr-site-info dd { min-width: 0; margin: 0; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 650; line-height: 1.5; text-overflow: ellipsis; white-space: nowrap; }
@@ -190,8 +190,6 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
   .field-grid .field { grid-column: 1; }
   .action-dock { padding-right: 18px; padding-left: 18px; }
   .qr-card { padding: 12px; }
-  .qr-frame { padding: 8px; }
-  .qr-site-info { padding-right: 8px; padding-left: 8px; }
 }
 
 @media (max-width: 420px) {

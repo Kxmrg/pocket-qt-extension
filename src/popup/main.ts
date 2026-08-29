@@ -39,7 +39,7 @@ async function drawQr(): Promise<void> {
   if (!canvas) return;
   await QRCode.toCanvas(canvas, state.payload.text, {
     width: 720,
-    margin: 2,
+    margin: 0,
     errorCorrectionLevel: 'M',
     color: { dark: '#102a2b', light: '#fffdf6' },
   });

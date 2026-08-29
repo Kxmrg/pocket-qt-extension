@@ -49,7 +49,7 @@
     renderPopup(document.querySelector('#app'), states[kind] || states.ready, actions);
     if (kind === 'qr') {
       await QRCode.toCanvas(document.querySelector('#qr-canvas'), 'pocket-pt://import/site?v=1&data=preview', {
-        width: 280, margin: 2, errorCorrectionLevel: 'M', color: { dark: '#17213a', light: '#ffffff' },
+        width: 280, margin: 0, errorCorrectionLevel: 'M', color: { dark: '#17213a', light: '#ffffff' },
       });
     }
   </script>
