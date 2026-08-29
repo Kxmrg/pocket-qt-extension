@@ -39,7 +39,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   unknown: '未知架构',
 };
 
-const PROJECT_URL = 'https://gitee.com/Kxmrg/pocket-qt-app';
+const PROJECT_URL = 'https://kxmrg.com/';
 const LICENSE_URL = 'https://pocket.kxmrg.com/user/licenses';
 
 function escapeHtml(value: unknown): string {
@@ -51,10 +51,9 @@ function escapeHtml(value: unknown): string {
     .replace(/'/g, '&#039;');
 }
 
-function icon(name: 'arrow' | 'check' | 'chevron' | 'external' | 'lock' | 'plus' | 'refresh' | 'remove' | 'shield'): string {
+function icon(name: 'arrow' | 'chevron' | 'external' | 'lock' | 'plus' | 'refresh' | 'remove' | 'shield'): string {
   const paths: Record<typeof name, string> = {
     arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-    check: '<path d="m5 12 4 4L19 6"/>',
     chevron: '<path d="m7 10 5 5 5-5"/>',
     external: '<path d="M14 5h5v5M10 14 19 5M19 13v6H5V5h6"/>',
     lock: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
@@ -64,6 +63,13 @@ function icon(name: 'arrow' | 'check' | 'chevron' | 'external' | 'lock' | 'plus'
     shield: '<path d="M12 3 5 6v5c0 4.6 2.9 8 7 10 4.1-2 7-5.4 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/>',
   };
   return `<svg class="icon icon-${name}" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name]}</svg>`;
+}
+
+function extensionVersion(): string {
+  if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) {
+    return chrome.runtime.getManifest().version;
+  }
+  return '0.4.0';
 }
 
 function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
@@ -181,38 +187,29 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
 
 function homeView(): string {
   return `<div class="shell home-shell">
-    ${appHeader({ title: 'Pocket PT', detail: '站点导入' })}
-    <section class="home-hero">
-      <span class="hero-mark">${icon('arrow')}</span>
-      <h1>快速导入 PT 站点</h1>
-      <p>从当前已登录页面读取配置，生成二维码后在手机端导入。</p>
-      <button class="primary home-read" type="button" data-action="read">读取当前页面${icon('arrow')}</button>
+    <section class="home-brand" data-home-brand data-home-section="brand">
+      <span class="home-brand-mark" aria-hidden="true">P</span>
+      <h1>Pocket PT</h1>
+      <p>站点导入插件 <strong>v${escapeHtml(extensionVersion())}</strong></p>
     </section>
-    <section class="home-section" data-home-guide>
-      <div class="home-section-title"><h2>使用方法</h2><span>3 步完成</span></div>
-      <ol class="guide-list">
-        <li><span>1</span><p><strong>打开并登录 PT 站点</strong><small>停留在需要导入的页面</small></p></li>
-        <li><span>2</span><p><strong>读取并确认配置</strong><small>可手动修改识别结果</small></p></li>
-        <li><span>3</span><p><strong>生成二维码</strong><small>使用 Pocket PT 扫码导入</small></p></li>
-      </ol>
-    </section>
-    <section class="home-section" data-home-features>
-      <div class="home-section-title"><h2>插件功能</h2></div>
-      <div class="feature-grid">
-        <div><span>${icon('check')}</span><strong>自动识别</strong><small>站点架构与地址</small></div>
-        <div><span>${icon('lock')}</span><strong>读取凭据</strong><small>Cookie 与 Passkey</small></div>
-        <div><span>${icon('refresh')}</span><strong>手动校正</strong><small>所有字段均可编辑</small></div>
-        <div><span>${icon('arrow')}</span><strong>扫码导入</strong><small>生成手机端二维码</small></div>
-      </div>
-    </section>
-    <section class="security-card" data-home-security>
-      <span class="security-icon">${icon('shield')}</span>
-      <div><h2>数据安全</h2><p>所有数据仅在本机处理，不上传、不保存。二维码包含登录凭据，请勿分享。</p></div>
-    </section>
-    <nav class="resource-links" aria-label="项目相关链接">
+    <nav class="resource-links" data-home-section="links" aria-label="项目相关链接">
       <a data-home-link="project" href="${PROJECT_URL}" target="_blank" rel="noreferrer">项目地址${icon('external')}</a>
       <a data-home-link="license" href="${LICENSE_URL}" target="_blank" rel="noreferrer">授权管理${icon('external')}</a>
     </nav>
+    <section class="home-guide" data-home-guide data-home-section="guide">
+      <h2>使用方法</h2>
+      <ol class="guide-list">
+        <li><span>1</span><strong>打开并登录 PT 站点，停留在种子列表页面</strong></li>
+        <li><span>2</span><strong>点击开始读取站点数据</strong></li>
+        <li><span>3</span><strong>手动修改补充站点信息</strong></li>
+        <li><span>4</span><strong>生成二维码，使用 Pocket PT 扫描添加站点</strong></li>
+      </ol>
+    </section>
+    <section class="security-card" data-home-security data-home-section="security">
+      <span class="security-icon">${icon('shield')}</span>
+      <div><h2>数据安全</h2><p>所有数据仅在本机处理，不上传、不保存。二维码包含登录凭据，请勿分享。</p></div>
+    </section>
+    <div class="home-action" data-home-section="action"><button class="primary home-read" type="button" data-action="read">读取站点数据${icon('arrow')}</button></div>
   </div>`;
 }
 

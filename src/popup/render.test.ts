@@ -39,24 +39,35 @@ describe('renderPopup', () => {
     renderPopup(root, { kind: 'idle' }, handlers);
     expect(root.querySelector('#site-form')).toBeNull();
     const readButton = root.querySelector<HTMLButtonElement>('[data-action="read"]');
-    expect(readButton?.textContent).toContain('读取当前页面');
+    expect(readButton?.textContent).toContain('读取站点数据');
     readButton?.click();
     expect(handlers.onRead).toHaveBeenCalledOnce();
   });
 
-  it('keeps onboarding, data safety, project, and authorization links on the unread home', () => {
+  it('renders the compact unread home in its intended reading order', () => {
     renderPopup(root, { kind: 'idle' }, actions());
 
-    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点');
-    expect(root.querySelector('[data-home-features]')?.textContent).toContain('自动识别');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket PT');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v0.4.0');
+    expect(root.querySelectorAll('[data-home-guide] li')).toHaveLength(4);
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点，停留在种子列表页面');
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('点击开始读取站点数据');
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('手动修改补充站点信息');
+    expect(root.querySelector('[data-home-guide]')?.textContent).toContain('生成二维码，使用 Pocket PT 扫描添加站点');
+    expect(root.querySelector('[data-home-features]')).toBeNull();
     expect(root.querySelector('[data-home-security]')?.textContent).toContain('仅在本机处理');
 
     const project = root.querySelector<HTMLAnchorElement>('a[data-home-link="project"]');
     const license = root.querySelector<HTMLAnchorElement>('a[data-home-link="license"]');
-    expect(project?.href).toBe('https://gitee.com/Kxmrg/pocket-qt-app');
+    expect(project?.href).toBe('https://kxmrg.com/');
     expect(license?.href).toBe('https://pocket.kxmrg.com/user/licenses');
     expect(project?.target).toBe('_blank');
     expect(license?.target).toBe('_blank');
+
+    const children = [...(root.querySelector('.home-shell')?.children ?? [])];
+    expect(children.map((element) => element.getAttribute('data-home-section'))).toEqual([
+      'brand', 'links', 'guide', 'security', 'action',
+    ]);
   });
 
   it('renders one explicit per-site permission action', () => {
