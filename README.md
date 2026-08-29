@@ -34,12 +34,12 @@ npm run build
 4. 选择本项目的 `chrome-extension/dist` 目录；
 5. 点击工具栏中的 Pocket PT 图标打开侧边栏；
 6. 打开或切换到 PT 页面，在侧边栏点击“读取当前页面”；
-7. 首次读取某个站点时，点击“允许读取本站”。Chrome 只授予当前站点 origin 的权限；
+7. 安装时允许扩展读取 HTTP/HTTPS 站点数据；如果之后在 Chrome 中单独阻止了某个站点，侧边栏会提示“允许读取本站”；
 8. 切换标签页不会关闭侧边栏，需要更新数据时点击顶部“刷新数据”。
 
 mTorrent 会从首页用户名链接 `/profile/detail/<UUID>` 提取 UUID。令牌不会自动读取，请前往 M-Team 控制台实验室复制后手动填写。
 
-NexusPHP 不使用 Token，扩展不会显示或写入 Token。Cookie 优先通过 Chrome Cookie API 按当前 URL 和域名读取、合并去重，再用当前页面可见 Cookie 补充缺失项；首次读取必须明确授予当前域名权限。站点禁止页面存储访问或 Cookie API 暂时失败时，架构和其他字段仍可继续读取。
+NexusPHP 不使用 Token，扩展不会显示或写入 Token。Cookie 优先通过 Chrome Cookie API 按当前 URL 和域名读取、合并去重，再用当前页面可见 Cookie 补充缺失项。由于读取 Cookie 是扩展的核心功能，清单使用必需的 HTTP/HTTPS 站点权限；`tabs` 权限保证侧边栏切换标签页后仍能获取当前站点并启动读取。站点禁止页面存储访问或 Cookie API 暂时失败时，架构和其他字段仍可继续读取。
 
 修改源代码后，需要重新执行 `npm run build`，再到扩展管理页面点击刷新。
 

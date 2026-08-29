@@ -163,7 +163,7 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   } else if (state.kind === 'loading') {
     root.innerHTML = `<div class="shell state-shell" aria-live="polite">${header('SITE TRANSFER', '正在读取站点')}<div class="scanner"><i></i></div><p>${escapeHtml(state.message)}</p></div>`;
   } else if (state.kind === 'permission') {
-    root.innerHTML = `<div class="shell state-shell">${header('PERMISSION / ONCE', '允许读取当前站点', state.origin)}<div class="permission-card"><p>需要读取当前站点页面和完整 Cookie，才能生成手机端配置。权限仅授予此域名。</p><button class="primary" type="button" data-action="permission">允许读取本站 <span>→</span></button></div></div>`;
+    root.innerHTML = `<div class="shell state-shell">${header('PERMISSION / SITE', '允许读取当前站点', state.origin)}<div class="permission-card"><p>Chrome 当前阻止了本站访问。允许后才能读取页面和完整 Cookie，生成手机端配置。</p><button class="primary" type="button" data-action="permission">允许读取本站 <span>→</span></button></div></div>`;
   } else if (state.kind === 'unsupported') {
     root.innerHTML = `<div class="shell state-shell">${header('ARCHITECTURE', architectureNames[state.detection.id])}<div class="unsupported-mark">暂不支持</div><p>Pocket PT 当前还不能导入此架构。</p><ul class="reason-list">${state.detection.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><button class="secondary" type="button" data-action="retry">重新识别</button></div>`;
   } else if (state.kind === 'error') {
