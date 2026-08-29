@@ -148,6 +148,9 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const tokenField = draft.architecture === 'nexusphp'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent'
+    ? ''
+    : credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
     ${appHeader({ title: 'Pocket Pt 站点导入插件', detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
@@ -162,7 +165,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
       <section class="panel form-section sensitive-panel"><div class="section-heading"><h2>登录信息</h2>${icon('lock')}</div>
         ${credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state)}
         ${tokenField}
-        ${credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state)}
+        ${passkeyField}
       </section>
       <section class="panel form-section pages-panel"><div class="section-heading"><h2>页面</h2></div>
         <div class="page-list">${pageRows(draft)}</div>
@@ -175,7 +178,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
       <details class="panel advanced"><summary><span>高级设置</span>${icon('chevron')}</summary>
         <div class="advanced-body">
           ${regularField('tags', '站点标签', draft.tags ?? '', 'tags', { placeholder: '多个标签用英文逗号分隔' })}
-          ${regularField('download-tags', '下载器标签', draft.downloadTags ?? '', 'downloadTags')}
+          ${regularField('download-tags', '下载器标签', draft.downloadTags ?? '', 'downloadTags', { placeholder: '多个标签用英文逗号分隔' })}
           ${regularField('widget', '权重', draft.widget, 'widget', { type: 'number', error: errors.widget })}
           <div class="check-field"><input id="search" data-field="search" type="checkbox" ${draft.search ? 'checked' : ''}><label for="search">参与聚合搜索</label></div>
         </div>

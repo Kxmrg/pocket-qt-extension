@@ -2,7 +2,7 @@ import QRCode from 'qrcode';
 import { collectSiteDraft } from '../application/collect-site';
 import type { SiteDraft } from '../domain/adapt-site';
 import { encodeImportPayload } from '../domain/payload';
-import { draftPageFromSnapshot } from '../domain/torrent-pages';
+import { createManualPage, draftPageFromSnapshot } from '../domain/torrent-pages';
 import type { ArchitectureId } from '../domain/types';
 import { validateDraft } from '../domain/validate-draft';
 import {
@@ -27,13 +27,6 @@ const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3> = {
   tnode: 1,
   mtorrent: 2,
   haidan: 3,
-};
-
-const defaultPageByArchitecture: Record<string, string> = {
-  nexusphp: '/torrents.php',
-  tnode: '/torrent/search',
-  mtorrent: '/browse',
-  haidan: '/torrents.php',
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -99,7 +92,7 @@ const actions: PopupActions = {
   onArchitectureChange: (architecture: ArchitectureId) => {
     updateDraft((draft) => {
       const pages = draft.pages.length > 0 ? draft.pages : [{
-        name: '综合', path: defaultPageByArchitecture[architecture] ?? '/torrents.php', tags: null, selected: true,
+        ...createManualPage(architecture), name: '综合',
       }];
       return {
         ...draft,
@@ -145,7 +138,7 @@ const actions: PopupActions = {
     void (async () => {
       try {
         const context = await getActivePageContext();
-        const page = draftPageFromSnapshot(await readPageSnapshot(context.tabId));
+        const page = draftPageFromSnapshot(await readPageSnapshot(context.tabId), '');
         if (!page) throw new Error('未能读取当前页面地址');
         updateDraft((draft) => ({ ...draft, pages: [...draft.pages, page] }));
       } catch (error) {
@@ -156,7 +149,7 @@ const actions: PopupActions = {
     })();
   },
   onPageAddManual: () => {
-    updateDraft((draft) => ({ ...draft, pages: [...draft.pages, { name: '新页面', path: defaultPageByArchitecture[draft.architecture] ?? '/torrents.php', tags: null, selected: true }] }));
+    updateDraft((draft) => ({ ...draft, pages: [...draft.pages, createManualPage(draft.architecture)] }));
   },
   onGenerate: () => {
     const ready = currentReady();

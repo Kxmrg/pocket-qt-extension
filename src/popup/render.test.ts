@@ -117,6 +117,20 @@ describe('renderPopup', () => {
     expect(root.textContent).not.toContain('朱雀');
     expect(root.querySelector('label[for="cookie"]')?.textContent).toBe('UUID');
     expect(root.querySelector('label[for="token"]')?.textContent).toBe('令牌');
+    expect(root.querySelector('#passkey')).toBeNull();
+  });
+
+  it('hides Passkey for TNode while keeping it for NexusPHP', () => {
+    renderPopup(root, { kind: 'ready', draft: draft({ architecture: 'tnode', scheme: 1 }), errors: {}, revealed: new Set() }, actions());
+    expect(root.querySelector('#passkey')).toBeNull();
+
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, actions());
+    expect(root.querySelector('#passkey')).not.toBeNull();
+  });
+
+  it('explains how to separate multiple downloader tags', () => {
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, actions());
+    expect(root.querySelector<HTMLInputElement>('#download-tags')?.placeholder).toBe('多个标签用英文逗号分隔');
   });
 
   it('opens the custom architecture menu and selects an option', () => {
