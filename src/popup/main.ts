@@ -38,7 +38,7 @@ async function drawQr(): Promise<void> {
   const canvas = root.querySelector<HTMLCanvasElement>('#qr-canvas');
   if (!canvas) return;
   await QRCode.toCanvas(canvas, state.payload.text, {
-    width: state.enlarged ? 520 : 280,
+    width: 720,
     margin: 2,
     errorCorrectionLevel: 'M',
     color: { dark: '#102a2b', light: '#fffdf6' },
@@ -160,16 +160,13 @@ const actions: PopupActions = {
       return;
     }
     try {
-      paint({ kind: 'qr', draft: ready.draft, payload: encodeImportPayload(ready.draft), enlarged: false });
+      paint({ kind: 'qr', draft: ready.draft, payload: encodeImportPayload(ready.draft) });
     } catch (error) {
       paint({ ...ready, errors: { payload: error instanceof Error ? error.message : '二维码生成失败' } });
     }
   },
   onBack: () => {
     if (state.kind === 'qr') paint(readyState(state.draft));
-  },
-  onEnlarge: () => {
-    if (state.kind === 'qr') paint({ ...state, enlarged: !state.enlarged });
   },
 };
 

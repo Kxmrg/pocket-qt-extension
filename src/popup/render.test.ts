@@ -22,7 +22,7 @@ function actions(): PopupActions {
     onRead: vi.fn(), onRefresh: vi.fn(), onRequestPermission: vi.fn(), onRetry: vi.fn(), onArchitectureChange: vi.fn(),
     onFieldChange: vi.fn(), onToggleCredential: vi.fn(),
     onPageChange: vi.fn(), onPageRemove: vi.fn(), onPageAddCurrent: vi.fn(), onPageAddManual: vi.fn(),
-    onGenerate: vi.fn(), onBack: vi.fn(), onEnlarge: vi.fn(),
+    onGenerate: vi.fn(), onBack: vi.fn(),
   };
 }
 
@@ -193,17 +193,21 @@ describe('renderPopup', () => {
     expect((root.querySelector('#cookie') as HTMLInputElement).type).toBe('text');
   });
 
-  it('renders QR details and enlargement controls', () => {
+  it('renders a single responsive QR card without metadata or enlargement controls', () => {
     renderPopup(root, {
-      kind: 'qr', draft: draft(), payload: { text: 'pocket-pt://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 }, enlarged: false,
+      kind: 'qr', draft: draft(), payload: { text: 'pocket-pt://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 },
     }, actions());
     expect(root.querySelector('#qr-canvas')).not.toBeNull();
     expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Qt 站点导入二维码');
-    expect(root.textContent).toContain('Example PT');
-    expect(root.textContent).toContain('180 B');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
+    expect(root.querySelector('.payload-meta')).toBeNull();
+    expect(root.textContent).not.toContain('NexusPHP');
+    expect(root.textContent).not.toContain('180 B');
     expect(root.textContent).toContain('二维码包含当前站点登录凭据');
     expect(root.textContent).toContain('返回修改');
-    expect(root.textContent).toContain('放大二维码');
+    expect(root.textContent).not.toContain('放大二维码');
+    expect(root.querySelectorAll('.qr-actions button')).toHaveLength(1);
   });
 
   it('connects every form control to an accessible label', () => {

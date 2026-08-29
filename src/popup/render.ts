@@ -10,7 +10,7 @@ export type PopupState =
   | { kind: 'unsupported'; detection: DetectionResult }
   | { kind: 'error'; message: string }
   | { kind: 'ready'; draft: SiteDraft; errors: Record<string, string>; revealed: Set<string>; sourceOrigin?: string }
-  | { kind: 'qr'; draft: SiteDraft; payload: EncodedPayload; enlarged: boolean };
+  | { kind: 'qr'; draft: SiteDraft; payload: EncodedPayload };
 
 export interface PopupActions {
   onRead: () => void;
@@ -26,7 +26,6 @@ export interface PopupActions {
   onPageAddManual: () => void;
   onGenerate: () => void;
   onBack: () => void;
-  onEnlarge: () => void;
 }
 
 const architectureNames: Record<ArchitectureId, string> = {
@@ -230,7 +229,7 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   } else if (state.kind === 'error') {
     root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {
-    root.innerHTML = `<div class="shell qr-shell ${state.enlarged ? 'is-enlarged' : ''}">${appHeader({ title: '扫码导入', detail: state.draft.name })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div><div class="payload-meta"><span>${architectureNames[state.draft.architecture]}</span><strong>${state.payload.compressedBytes} B</strong></div></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button><button class="primary" type="button" data-action="enlarge">${state.enlarged ? '恢复大小' : '放大二维码'}</button></div></div>`;
+    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
   }
 }
 
@@ -242,7 +241,6 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   root.querySelector<HTMLElement>('[data-action="retry"]')?.addEventListener('click', actions.onRetry);
   root.querySelector<HTMLElement>('[data-action="generate"]')?.addEventListener('click', actions.onGenerate);
   root.querySelector<HTMLElement>('[data-action="back"]')?.addEventListener('click', actions.onBack);
-  root.querySelector<HTMLElement>('[data-action="enlarge"]')?.addEventListener('click', actions.onEnlarge);
   root.querySelector<HTMLElement>('[data-action="add-current-page"]')?.addEventListener('click', actions.onPageAddCurrent);
   root.querySelector<HTMLElement>('[data-action="add-manual-page"]')?.addEventListener('click', actions.onPageAddManual);
   root.querySelector<HTMLElement>('[data-action="read"]')?.addEventListener('click', actions.onRead);

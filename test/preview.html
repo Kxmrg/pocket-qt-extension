@@ -36,7 +36,7 @@
     const actions = {
       onRead: noop, onRefresh: noop, onRequestPermission: noop, onRetry: noop, onArchitectureChange: noop, onFieldChange: noop,
       onToggleCredential: noop, onPageChange: noop, onPageRemove: noop,
-      onPageAddCurrent: noop, onPageAddManual: noop, onGenerate: noop, onBack: noop, onEnlarge: noop,
+      onPageAddCurrent: noop, onPageAddManual: noop, onGenerate: noop, onBack: noop,
     };
     const states = {
       idle: { kind: 'idle' },
@@ -44,7 +44,7 @@
       permission: { kind: 'permission', origin: 'https://pt.example.com' },
       error: { kind: 'error', message: '请确认当前页面已完成登录，然后重试。' },
       unsupported: { kind: 'unsupported', detection: { id: 'unit3d', supported: false, confidence: 'certain', reasons: ['检测到 UNIT3D 标识', '检测到 UNIT3D 种子路由'] } },
-      qr: { kind: 'qr', draft, payload: { text: 'preview-only', sourceBytes: 512, compressedBytes: 284 }, enlarged: false },
+      qr: { kind: 'qr', draft, payload: { text: 'preview-only', sourceBytes: 512, compressedBytes: 284 } },
     };
     renderPopup(document.querySelector('#app'), states[kind] || states.ready, actions);
     if (kind === 'qr') {

@@ -165,15 +165,12 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 /* QR */
 .qr-shell { min-height: 100vh; }
 .qr-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
-.qr-frame { display: grid; width: max-content; max-width: 100%; margin: 0 auto; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; place-items: center; }
-.qr-frame canvas { display: block; width: 280px; max-width: 100%; height: 280px; image-rendering: pixelated; }
-.is-enlarged .qr-frame canvas { width: 520px; height: 520px; }
-.payload-meta { display: flex; margin-top: 16px; padding-top: 14px; align-items: center; justify-content: space-between; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 12px; }
-.payload-meta strong { color: var(--text); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.qr-frame { display: grid; width: 100%; margin: 0 auto; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; place-items: center; }
+.qr-frame canvas { display: block; width: 100% !important; min-width: 280px; max-width: 640px; height: auto !important; aspect-ratio: 1; image-rendering: pixelated; }
 .danger-note { display: flex; margin: 14px 0; padding: 14px 16px; align-items: flex-start; gap: 10px; border: 1px solid #d4e0f7; border-radius: var(--radius-sm); color: var(--primary); background: var(--primary-soft); }
 .danger-note .icon { width: 18px; height: 18px; margin-top: 1px; }
 .danger-note p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }
-.qr-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.qr-actions { display: grid; grid-template-columns: 1fr; }
 
 @media (max-width: 560px) {
   .shell { padding-right: 18px; padding-left: 18px; }
@@ -183,7 +180,8 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
   .field-grid { grid-template-columns: 1fr; }
   .field-grid .field { grid-column: 1; }
   .action-dock { padding-right: 18px; padding-left: 18px; }
-  .qr-frame canvas, .is-enlarged .qr-frame canvas { width: min(280px, calc(100vw - 92px)); height: auto; }
+  .qr-card { padding: 12px; }
+  .qr-frame { padding: 8px; }
 }
 
 @media (max-width: 420px) {
@@ -202,7 +200,6 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
   .page-actions { gap: 7px; }
   .add-page { padding-inline: 6px; gap: 4px; font-size: 11px; }
   .add-page .icon { width: 15px; height: 15px; }
-  .qr-actions { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
