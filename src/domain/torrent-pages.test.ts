@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractTorrentPages } from './torrent-pages';
+import { draftPageFromSnapshot, extractTorrentPages } from './torrent-pages';
 import type { PageSnapshot } from './types';
 
 function snapshotWithLinks(links: Array<[string, string]>, url = 'https://pt.example/'): PageSnapshot {
@@ -27,7 +27,7 @@ describe('extractTorrentPages', () => {
       ['详情', 'https://pt.example/details.php?id=9'],
       ['外站', 'https://outside.example/torrents.php'],
     ], 'https://pt.example/torrents.php?cat=401#top'))).toEqual([
-      { name: '当前页面', path: '/torrents.php?cat=401', tags: null, selected: true },
+      { name: 'PT', path: '/torrents.php?cat=401', tags: null, selected: true },
     ]);
   });
 
@@ -37,7 +37,7 @@ describe('extractTorrentPages', () => {
     ['haidan', 'https://haidan.cc/'],
   ] as const)('uses the current root path for %s instead of an architecture default', (id, url) => {
     expect(extractTorrentPages(id, snapshotWithLinks([], url))).toEqual([
-      { name: '当前页面', path: '/', tags: null, selected: true },
+      { name: 'PT', path: '/', tags: null, selected: true },
     ]);
   });
 
@@ -50,7 +50,19 @@ describe('extractTorrentPages', () => {
       ['综合', 'https://kp.m-team.cc/browse'],
       ['成人', 'https://kp.m-team.cc/browse/adult'],
     ], 'https://kp.m-team.cc/'));
-    expect(tnode).toEqual([{ name: '当前页面', path: '/', tags: null, selected: true }]);
-    expect(mtorrent).toEqual([{ name: '当前页面', path: '/', tags: null, selected: true }]);
+    expect(tnode).toEqual([{ name: 'PT', path: '/', tags: null, selected: true }]);
+    expect(mtorrent).toEqual([{ name: 'PT', path: '/', tags: null, selected: true }]);
+  });
+
+  it('builds a page from the current title and URL when adding the active page', () => {
+    const snapshot = snapshotWithLinks([], 'https://pt.example/special.php?id=7#top');
+    snapshot.title = '  今日推荐 - Example PT  ';
+
+    expect(draftPageFromSnapshot(snapshot)).toEqual({
+      name: '今日推荐 - Example PT',
+      path: '/special.php?id=7',
+      tags: null,
+      selected: true,
+    });
   });
 });

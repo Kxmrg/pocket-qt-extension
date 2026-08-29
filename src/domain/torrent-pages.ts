@@ -7,16 +7,21 @@ export interface DraftPage {
   selected: boolean;
 }
 
-export function extractTorrentPages(_id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
+export function draftPageFromSnapshot(snapshot: PageSnapshot): DraftPage | null {
   try {
     const current = new URL(snapshot.url);
-    return [{
-      name: '当前页面',
+    return {
+      name: snapshot.title.trim() || '当前页面',
       path: `${current.pathname || '/'}${current.search}`,
       tags: null,
       selected: true,
-    }];
+    };
   } catch {
-    return [];
+    return null;
   }
+}
+
+export function extractTorrentPages(_id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
+  const page = draftPageFromSnapshot(snapshot);
+  return page ? [page] : [];
 }

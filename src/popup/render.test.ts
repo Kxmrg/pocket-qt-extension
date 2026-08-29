@@ -20,8 +20,8 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
 function actions(): PopupActions {
   return {
     onRead: vi.fn(), onRefresh: vi.fn(), onRequestPermission: vi.fn(), onRetry: vi.fn(), onArchitectureChange: vi.fn(),
-    onFieldChange: vi.fn(), onToggleCredential: vi.fn(), onPageToggle: vi.fn(),
-    onPageChange: vi.fn(), onPageRemove: vi.fn(), onPageAdd: vi.fn(),
+    onFieldChange: vi.fn(), onToggleCredential: vi.fn(),
+    onPageChange: vi.fn(), onPageRemove: vi.fn(), onPageAddCurrent: vi.fn(), onPageAddManual: vi.fn(),
     onGenerate: vi.fn(), onBack: vi.fn(), onEnlarge: vi.fn(),
   };
 }
@@ -86,7 +86,7 @@ describe('renderPopup', () => {
     expect([...root.querySelectorAll('button')].some((button) => button.textContent?.includes('生成二维码'))).toBe(false);
   });
 
-  it('renders editable fields, masked credentials, and all extracted pages checked', () => {
+  it('renders editable fields, masked credentials, and simplified page rows', () => {
     const handlers = actions();
     renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set(), sourceOrigin: 'https://pt.example' }, handlers);
     expect((root.querySelector('#site-name') as HTMLInputElement).value).toBe('Example PT');
@@ -94,13 +94,16 @@ describe('renderPopup', () => {
     expect((root.querySelector('#user-agent') as HTMLInputElement).value).toBe('Browser UA');
     expect((root.querySelector('#cookie') as HTMLInputElement).type).toBe('password');
     expect(root.querySelector('#token')).toBeNull();
-    expect(root.querySelector('#page-tags-0')).not.toBeNull();
-    const pageChecks = [...root.querySelectorAll<HTMLInputElement>('input[data-page-selected]')];
-    expect(pageChecks).toHaveLength(2);
-    expect(pageChecks.every((input) => input.checked)).toBe(true);
+    expect(root.querySelector('#page-tags-0')).toBeNull();
+    expect(root.querySelector('[data-page-selected]')).toBeNull();
+    expect(root.querySelectorAll('.page-row')).toHaveLength(2);
+    expect((root.querySelector('#page-name-0') as HTMLInputElement).value).toBe('综合');
+    expect((root.querySelector('#page-path-0') as HTMLInputElement).value).toBe('/torrents.php');
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('pt.example');
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
     expect(root.querySelector('[data-home-guide]')).toBeNull();
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Pt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
     expect(root.querySelector('h2')?.textContent).toBe('站点信息');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
     expect(handlers.onRefresh).toHaveBeenCalledOnce();
@@ -108,12 +111,37 @@ describe('renderPopup', () => {
 
   it('shows architecture names without fixed-site aliases', () => {
     renderPopup(root, { kind: 'ready', draft: draft({ architecture: 'mtorrent', scheme: 2 }), errors: {}, revealed: new Set(), sourceOrigin: 'https://kp.m-team.cc' }, actions());
-    expect(root.querySelector<HTMLOptionElement>('option[value="mtorrent"]')?.textContent).toBe('mTorrent');
-    expect(root.querySelector<HTMLOptionElement>('option[value="tnode"]')?.textContent).toBe('TNode');
+    expect(root.querySelector('[data-architecture-option="mtorrent"]')?.textContent).toContain('mTorrent');
+    expect(root.querySelector('[data-architecture-option="tnode"]')?.textContent).toContain('TNode');
     expect(root.textContent).not.toContain('M-Team');
     expect(root.textContent).not.toContain('朱雀');
     expect(root.querySelector('label[for="cookie"]')?.textContent).toBe('UUID');
     expect(root.querySelector('label[for="token"]')?.textContent).toBe('令牌');
+  });
+
+  it('opens the custom architecture menu and selects an option', () => {
+    const handlers = actions();
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, handlers);
+    const trigger = root.querySelector<HTMLButtonElement>('[data-architecture-trigger]');
+    const menu = root.querySelector<HTMLElement>('[data-architecture-menu]');
+    expect(trigger?.getAttribute('aria-expanded')).toBe('false');
+    expect(menu?.hidden).toBe(true);
+
+    trigger?.click();
+    expect(trigger?.getAttribute('aria-expanded')).toBe('true');
+    expect(menu?.hidden).toBe(false);
+    root.querySelector<HTMLButtonElement>('[data-architecture-option="tnode"]')?.click();
+    expect(handlers.onArchitectureChange).toHaveBeenCalledWith('tnode');
+    expect(menu?.hidden).toBe(true);
+  });
+
+  it('provides separate current-page and manual-page actions on one row', () => {
+    const handlers = actions();
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, handlers);
+    root.querySelector<HTMLButtonElement>('[data-action="add-current-page"]')?.click();
+    root.querySelector<HTMLButtonElement>('[data-action="add-manual-page"]')?.click();
+    expect(handlers.onPageAddCurrent).toHaveBeenCalledOnce();
+    expect(handlers.onPageAddManual).toHaveBeenCalledOnce();
   });
 
   it('shows field errors and disables QR generation', () => {

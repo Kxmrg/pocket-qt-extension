@@ -20,10 +20,10 @@ export interface PopupActions {
   onArchitectureChange: (architecture: ArchitectureId) => void;
   onFieldChange: (field: string, value: string | number | boolean | null) => void;
   onToggleCredential: (field: string) => void;
-  onPageToggle: (index: number, selected: boolean) => void;
-  onPageChange: (index: number, field: 'name' | 'path' | 'tags', value: string) => void;
+  onPageChange: (index: number, field: 'name' | 'path', value: string) => void;
   onPageRemove: (index: number) => void;
-  onPageAdd: () => void;
+  onPageAddCurrent: () => void;
+  onPageAddManual: () => void;
   onGenerate: () => void;
   onBack: () => void;
   onEnlarge: () => void;
@@ -120,26 +120,24 @@ function architectureSelect(draft: SiteDraft, errors: Record<string, string>): s
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
-  ].map((id) => `<option value="${id}" ${draft.architecture === id ? 'selected' : ''}>${escapeHtml(architectureNames[id])}</option>`).join('');
+  ].map((id) => `<button type="button" class="architecture-option ${draft.architecture === id ? 'is-selected' : ''}" data-architecture-option="${id}" role="option" aria-selected="${draft.architecture === id}"><span>${draft.architecture === id ? '✓' : ''}</span>${escapeHtml(architectureNames[id])}</button>`).join('');
   return `<div class="field ${errors.architecture ? 'has-error' : ''}">
-    <label for="architecture">站点架构</label>
-    <select id="architecture" data-architecture>${options}</select>
+    <label id="architecture-label">站点架构</label>
+    <div class="architecture-control">
+      <button type="button" class="architecture-trigger" data-architecture-trigger aria-labelledby="architecture-label architecture-value" aria-haspopup="listbox" aria-expanded="false"><span id="architecture-value">${escapeHtml(architectureNames[draft.architecture])}</span>${icon('chevron')}</button>
+      <div class="architecture-menu" data-architecture-menu role="listbox" aria-labelledby="architecture-label" hidden>${options}</div>
+    </div>
     ${errorFor(errors, 'architecture')}
   </div>`;
 }
 
 function pageRows(draft: SiteDraft): string {
   return draft.pages.map((page, index) => `<article class="page-row">
-    <div class="page-select">
-      <input id="page-selected-${index}" data-page-selected="${index}" type="checkbox" ${page.selected ? 'checked' : ''}>
-      <label for="page-selected-${index}">页面 ${index + 1}</label>
-    </div>
-    <div class="page-grid">
+    <div class="page-row-header">
       <div class="field compact"><label for="page-name-${index}">名称</label><input id="page-name-${index}" data-page-field="name" data-page-index="${index}" value="${escapeHtml(page.name)}"></div>
-      <div class="field compact path"><label for="page-path-${index}">路径</label><input id="page-path-${index}" data-page-field="path" data-page-index="${index}" value="${escapeHtml(page.path)}" spellcheck="false"></div>
       <button type="button" class="icon-button remove-page" data-page-remove="${index}" aria-label="删除页面 ${index + 1}">${icon('remove')}</button>
-      <div class="field compact page-tags"><label for="page-tags-${index}">标签（可选）</label><input id="page-tags-${index}" data-page-field="tags" data-page-index="${index}" value="${escapeHtml(page.tags ?? '')}" placeholder="使用英文逗号分隔"></div>
     </div>
+    <div class="field compact page-row-path"><label for="page-path-${index}">路径</label><input id="page-path-${index}" data-page-field="path" data-page-index="${index}" value="${escapeHtml(page.path)}" spellcheck="false"></div>
   </article>`).join('');
 }
 
@@ -152,7 +150,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
     : credentialField('token', tokenLabel, draft.token, 'token', state);
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
-    ${appHeader({ title: '站点导入', action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
+    ${appHeader({ title: 'Pocket Pt 站点导入插件', detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
     <div class="site-context" data-site-context><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(sourceHost(state.sourceOrigin))}</strong><span class="architecture-badge">${escapeHtml(architectureNames[draft.architecture])}</span></div>
     <form id="site-form" novalidate>
       <section class="panel form-section"><div class="section-heading"><h2>站点信息</h2></div>
@@ -169,7 +167,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
       <section class="panel form-section pages-panel"><div class="section-heading"><h2>页面</h2></div>
         <div class="page-list">${pageRows(draft)}</div>
         ${errorFor(errors, 'pages')}
-        <button class="add-page" type="button" data-action="add-page">${icon('plus')}添加页面</button>
+        <div class="page-actions">
+          <button class="add-page add-current-page" type="button" data-action="add-current-page">${icon('plus')}添加当前页面</button>
+          <button class="add-page" type="button" data-action="add-manual-page">${icon('plus')}手动添加页面</button>
+        </div>
       </section>
       <details class="panel advanced"><summary><span>高级设置</span>${icon('chevron')}</summary>
         <div class="advanced-body">
@@ -238,13 +239,29 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   root.querySelector<HTMLElement>('[data-action="generate"]')?.addEventListener('click', actions.onGenerate);
   root.querySelector<HTMLElement>('[data-action="back"]')?.addEventListener('click', actions.onBack);
   root.querySelector<HTMLElement>('[data-action="enlarge"]')?.addEventListener('click', actions.onEnlarge);
-  root.querySelector<HTMLElement>('[data-action="add-page"]')?.addEventListener('click', actions.onPageAdd);
+  root.querySelector<HTMLElement>('[data-action="add-current-page"]')?.addEventListener('click', actions.onPageAddCurrent);
+  root.querySelector<HTMLElement>('[data-action="add-manual-page"]')?.addEventListener('click', actions.onPageAddManual);
   root.querySelector<HTMLElement>('[data-action="read"]')?.addEventListener('click', actions.onRead);
   root.querySelector<HTMLElement>('[data-action="refresh"]')?.addEventListener('click', actions.onRefresh);
 
-  root.querySelector<HTMLSelectElement>('[data-architecture]')?.addEventListener('change', (event) => {
-    actions.onArchitectureChange((event.currentTarget as HTMLSelectElement).value as ArchitectureId);
+  const architectureTrigger = root.querySelector<HTMLButtonElement>('[data-architecture-trigger]');
+  const architectureMenu = root.querySelector<HTMLElement>('[data-architecture-menu]');
+  const closeArchitectureMenu = () => {
+    if (!architectureMenu || !architectureTrigger) return;
+    architectureMenu.hidden = true;
+    architectureTrigger.setAttribute('aria-expanded', 'false');
+  };
+  architectureTrigger?.addEventListener('click', () => {
+    if (!architectureMenu) return;
+    architectureMenu.hidden = !architectureMenu.hidden;
+    architectureTrigger.setAttribute('aria-expanded', String(!architectureMenu.hidden));
   });
+  for (const button of root.querySelectorAll<HTMLButtonElement>('[data-architecture-option]')) {
+    button.addEventListener('click', () => {
+      closeArchitectureMenu();
+      actions.onArchitectureChange(button.dataset.architectureOption as ArchitectureId);
+    });
+  }
   for (const input of root.querySelectorAll<HTMLInputElement>('[data-field]')) {
     input.addEventListener('change', () => {
       const field = input.dataset.field ?? '';
@@ -261,11 +278,8 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
       actions.onToggleCredential(field);
     });
   }
-  for (const checkbox of root.querySelectorAll<HTMLInputElement>('[data-page-selected]')) {
-    checkbox.addEventListener('change', () => actions.onPageToggle(Number(checkbox.dataset.pageSelected), checkbox.checked));
-  }
   for (const input of root.querySelectorAll<HTMLInputElement>('[data-page-field]')) {
-    input.addEventListener('change', () => actions.onPageChange(Number(input.dataset.pageIndex), input.dataset.pageField as 'name' | 'path' | 'tags', input.value));
+    input.addEventListener('change', () => actions.onPageChange(Number(input.dataset.pageIndex), input.dataset.pageField as 'name' | 'path', input.value));
   }
   for (const button of root.querySelectorAll<HTMLButtonElement>('[data-page-remove]')) {
     button.addEventListener('click', () => actions.onPageRemove(Number(button.dataset.pageRemove)));

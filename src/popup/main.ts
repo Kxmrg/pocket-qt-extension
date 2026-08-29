@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import { collectSiteDraft } from '../application/collect-site';
 import type { SiteDraft } from '../domain/adapt-site';
 import { encodeImportPayload } from '../domain/payload';
+import { draftPageFromSnapshot } from '../domain/torrent-pages';
 import type { ArchitectureId } from '../domain/types';
 import { validateDraft } from '../domain/validate-draft';
 import {
@@ -134,16 +135,27 @@ const actions: PopupActions = {
     if (revealed.has(field)) revealed.delete(field); else revealed.add(field);
     paint({ ...ready, revealed });
   },
-  onPageToggle: (index, selected) => {
-    updateDraft((draft) => ({ ...draft, pages: draft.pages.map((page, pageIndex) => pageIndex === index ? { ...page, selected } : page) }));
-  },
   onPageChange: (index, field, value) => {
-    updateDraft((draft) => ({ ...draft, pages: draft.pages.map((page, pageIndex) => pageIndex === index ? { ...page, [field]: field === 'tags' ? value || null : value } : page) }));
+    updateDraft((draft) => ({ ...draft, pages: draft.pages.map((page, pageIndex) => pageIndex === index ? { ...page, [field]: value } : page) }));
   },
   onPageRemove: (index) => {
     updateDraft((draft) => ({ ...draft, pages: draft.pages.filter((_, pageIndex) => pageIndex !== index) }));
   },
-  onPageAdd: () => {
+  onPageAddCurrent: () => {
+    void (async () => {
+      try {
+        const context = await getActivePageContext();
+        const page = draftPageFromSnapshot(await readPageSnapshot(context.tabId));
+        if (!page) throw new Error('未能读取当前页面地址');
+        updateDraft((draft) => ({ ...draft, pages: [...draft.pages, page] }));
+      } catch (error) {
+        const ready = currentReady();
+        if (!ready) return;
+        paint({ ...ready, errors: { ...ready.errors, pages: error instanceof Error ? error.message : '未能读取当前页面' } });
+      }
+    })();
+  },
+  onPageAddManual: () => {
     updateDraft((draft) => ({ ...draft, pages: [...draft.pages, { name: '新页面', path: defaultPageByArchitecture[draft.architecture] ?? '/torrents.php', tags: null, selected: true }] }));
   },
   onGenerate: () => {
