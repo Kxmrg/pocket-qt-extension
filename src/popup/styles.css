@@ -167,6 +167,10 @@ html:has(.home-shell), body:has(.home-shell), #app:has(.home-shell) { min-height
 .qr-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .qr-frame { display: grid; width: 100%; margin: 0 auto; padding: 14px; border: 1px solid var(--border); border-radius: 10px; background: #fff; place-items: center; }
 .qr-frame canvas { display: block; width: 100% !important; min-width: 280px; max-width: 640px; height: auto !important; aspect-ratio: 1; image-rendering: pixelated; }
+.qr-site-info { display: grid; margin: 18px 0 0; padding: 16px 0 0; gap: 12px; border-top: 1px solid var(--border); }
+.qr-site-info > div { display: grid; min-width: 0; grid-template-columns: 78px minmax(0, 1fr); align-items: baseline; gap: 12px; }
+.qr-site-info dt { color: var(--text-muted); font-size: 12px; font-weight: 650; }
+.qr-site-info dd { min-width: 0; margin: 0; overflow: hidden; color: var(--text); font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
 .danger-note { display: flex; margin: 14px 0; padding: 14px 16px; align-items: flex-start; gap: 10px; border: 1px solid #d4e0f7; border-radius: var(--radius-sm); color: var(--primary); background: var(--primary-soft); }
 .danger-note .icon { width: 18px; height: 18px; margin-top: 1px; }
 .danger-note p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.6; }

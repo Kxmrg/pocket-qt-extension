@@ -193,6 +193,24 @@ describe('renderPopup', () => {
     expect((root.querySelector('#cookie') as HTMLInputElement).type).toBe('text');
   });
 
+  it('keeps advanced settings open when aggregate search rerenders the form', () => {
+    const handlers = actions();
+    let readyState: Extract<PopupState, { kind: 'ready' }> = {
+      kind: 'ready', draft: draft(), errors: {}, revealed: new Set(),
+    };
+    handlers.onFieldChange = vi.fn((field, value) => {
+      if (field === 'search') readyState = { ...readyState, draft: { ...readyState.draft, search: Boolean(value) } };
+      renderPopup(root, readyState, handlers);
+    });
+    renderPopup(root, readyState, handlers);
+    const advanced = root.querySelector<HTMLDetailsElement>('details.advanced');
+    if (advanced) advanced.open = true;
+
+    root.querySelector<HTMLInputElement>('#search')?.click();
+
+    expect(root.querySelector<HTMLDetailsElement>('details.advanced')?.open).toBe(true);
+  });
+
   it('renders a single responsive QR card without metadata or enlargement controls', () => {
     const handlers = actions();
     renderPopup(root, {
@@ -203,7 +221,13 @@ describe('renderPopup', () => {
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
     expect(root.querySelector('.payload-meta')).toBeNull();
-    expect(root.textContent).not.toContain('NexusPHP');
+    const siteInfo = root.querySelector('[data-qr-site-info]');
+    expect(siteInfo?.textContent).toContain('架构');
+    expect(siteInfo?.textContent).toContain('NexusPHP');
+    expect(siteInfo?.textContent).toContain('站点名称');
+    expect(siteInfo?.textContent).toContain('Example PT');
+    expect(siteInfo?.textContent).toContain('地址');
+    expect(siteInfo?.textContent).toContain('https://pt.example');
     expect(root.textContent).not.toContain('180 B');
     expect(root.textContent).toContain('二维码包含当前站点登录凭据');
     expect(root.textContent).toContain('返回修改');

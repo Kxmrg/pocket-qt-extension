@@ -229,7 +229,7 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   } else if (state.kind === 'error') {
     root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {
-    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
+    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div><dl class="qr-site-info" data-qr-site-info><div><dt>架构</dt><dd>${escapeHtml(architectureNames[state.draft.architecture])}</dd></div><div><dt>站点名称</dt><dd>${escapeHtml(state.draft.name)}</dd></div><div><dt>地址</dt><dd title="${escapeHtml(state.draft.address)}">${escapeHtml(state.draft.address)}</dd></div></dl></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
   }
 }
 
@@ -266,9 +266,14 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   }
   for (const input of root.querySelectorAll<HTMLInputElement>('[data-field]')) {
     input.addEventListener('change', () => {
+      const keepAdvancedOpen = Boolean(input.closest<HTMLDetailsElement>('details.advanced')?.open);
       const field = input.dataset.field ?? '';
       const value = input.type === 'checkbox' ? input.checked : input.type === 'number' ? Number(input.value) : input.value;
       actions.onFieldChange(field, value);
+      if (keepAdvancedOpen) {
+        const advanced = root.querySelector<HTMLDetailsElement>('details.advanced');
+        if (advanced) advanced.open = true;
+      }
     });
   }
   for (const button of root.querySelectorAll<HTMLButtonElement>('[data-reveal]')) {
