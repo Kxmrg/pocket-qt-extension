@@ -31,7 +31,7 @@ export interface EncodedPayload {
 }
 
 export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
-  if (draft.scheme === null) throw new Error('请选择 Pocket PT 支持的站点架构');
+  if (draft.scheme === null) throw new Error('请选择 Pocket Qt 支持的站点架构');
   return {
     protocol: 'pocket-pt.site',
     version: 1,

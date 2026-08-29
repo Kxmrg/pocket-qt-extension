@@ -1,6 +1,6 @@
-# Pocket Pt 站点导入插件
+# Pocket Qt 站点导入插件
 
-扩展使用 Chrome 侧边栏。用户点击“读取当前页面”后，扩展才会在本地识别站点架构，读取当前站点 Cookie、User-Agent、特殊 Token/UUID/UID/Passkey，并把当前网址的路径作为唯一种子页面。用户可以自行修改或新增页面，确认后生成供 Pocket PT 手机端导入的二维码。
+扩展使用 Chrome 侧边栏。用户点击“读取当前页面”后，扩展才会在本地识别站点架构，读取当前站点 Cookie、User-Agent、特殊 Token/UUID/UID/Passkey，并把当前网址的路径作为唯一种子页面。用户可以自行修改或新增页面，确认后生成供 Pocket Qt 手机端导入的二维码。
 
 当前阶段只包含 Chrome 扩展。手机端扫码导入将在下一阶段实现。
 
@@ -10,7 +10,7 @@
 - TNode：识别 `zhuque.in`；
 - mTorrent：识别 M-Team 的 `m-team.cc` 和 `m-team.io` 域名，并转换为对应 API 地址；
 - HaiDanPt：识别 `haidan.cc`；
-- Gazelle、UNIT3D：能够识别，但会明确提示 Pocket PT 暂不支持；
+- Gazelle、UNIT3D：能够识别，但会明确提示 Pocket Qt 暂不支持；
 - 未知架构：允许手动选择以上四种已支持架构并填写配置。
 
 ## 构建与测试
@@ -32,7 +32,7 @@ npm run build
 2. 开启右上角“开发者模式”；
 3. 点击“加载已解压的扩展程序”；
 4. 选择本项目的 `chrome-extension/dist` 目录；
-5. 点击工具栏中的 Pocket PT 图标打开侧边栏；
+5. 点击工具栏中的 Pocket Qt 图标打开侧边栏；
 6. 打开或切换到 PT 页面，在侧边栏点击“读取当前页面”；
 7. 安装时允许扩展读取 HTTP/HTTPS 站点数据；如果之后在 Chrome 中单独阻止了某个站点，侧边栏会提示“允许读取本站”；
 8. 切换标签页不会关闭侧边栏，需要更新数据时点击顶部“刷新数据”。

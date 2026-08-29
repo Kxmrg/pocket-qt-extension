@@ -47,7 +47,7 @@ describe('renderPopup', () => {
   it('renders the compact unread home in its intended reading order', () => {
     renderPopup(root, { kind: 'idle' }, actions());
 
-    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Pt');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Qt');
     expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v0.4.0');
     expect(root.querySelectorAll('[data-home-guide] li')).toHaveLength(4);
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点，停留在种子列表页面');
@@ -77,6 +77,8 @@ describe('renderPopup', () => {
     renderPopup(root, state, actions());
     expect(root.querySelectorAll('button')).toHaveLength(1);
     expect(root.querySelector('button')?.textContent).toContain('允许读取本站');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
   });
 
   it.each(['gazelle', 'unit3d'] as const)('shows %s as unsupported without a generate action', (id) => {
@@ -89,7 +91,7 @@ describe('renderPopup', () => {
   it('uses the plugin header and omits technical guidance on the read error page', () => {
     renderPopup(root, { kind: 'error', message: '请在普通 HTTP 或 HTTPS 站点中使用' }, actions());
 
-    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Pt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
     expect(root.querySelector('h1')?.textContent).toBe('未能读取站点');
     expect(root.textContent).not.toContain('请在普通 HTTP 或 HTTPS 站点中使用');
@@ -112,7 +114,7 @@ describe('renderPopup', () => {
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('pt.example');
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
     expect(root.querySelector('[data-home-guide]')).toBeNull();
-    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Pt 站点导入插件');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
     expect(root.querySelector('.app-brand')?.textContent).toContain('v0.4.0');
     expect(root.querySelector('h2')?.textContent).toBe('站点信息');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
@@ -196,6 +198,7 @@ describe('renderPopup', () => {
       kind: 'qr', draft: draft(), payload: { text: 'pocket-pt://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 }, enlarged: false,
     }, actions());
     expect(root.querySelector('#qr-canvas')).not.toBeNull();
+    expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Qt 站点导入二维码');
     expect(root.textContent).toContain('Example PT');
     expect(root.textContent).toContain('180 B');
     expect(root.textContent).toContain('二维码包含当前站点登录凭据');

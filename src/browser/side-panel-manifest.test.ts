@@ -15,8 +15,8 @@ describe('side panel manifest', () => {
   it('uses the product name consistently in Chrome', () => {
     const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
 
-    expect(manifest.name).toBe('Pocket Pt 站点导入插件');
-    expect(manifest.action?.default_title).toBe('打开 Pocket Pt 站点导入插件');
+    expect(manifest.name).toBe('Pocket Qt 站点导入插件');
+    expect(manifest.action?.default_title).toBe('打开 Pocket Qt 站点导入插件');
   });
 
   it('opens a global side panel from the toolbar action instead of a transient popup', () => {

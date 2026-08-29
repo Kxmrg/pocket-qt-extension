@@ -30,7 +30,7 @@ describe('validateDraft', () => {
   });
 
   it.each([
-    [{ architecture: 'unknown', scheme: null }, 'architecture', '请选择 Pocket PT 支持的站点架构'],
+    [{ architecture: 'unknown', scheme: null }, 'architecture', '请选择 Pocket Qt 支持的站点架构'],
     [{ name: '  ' }, 'name', '请输入站点名称'],
     [{ address: 'file:///tmp/pt' }, 'address', '请输入有效的 HTTP 或 HTTPS 站点地址'],
     [{ cookie: '' }, 'cookie', '请输入 Cookie'],

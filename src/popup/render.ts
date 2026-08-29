@@ -41,6 +41,7 @@ const architectureNames: Record<ArchitectureId, string> = {
 
 const PROJECT_URL = 'https://kxmrg.com/';
 const LICENSE_URL = 'https://pocket.kxmrg.com/user/licenses';
+const PLUGIN_NAME = 'Pocket Qt 站点导入插件';
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '')
@@ -74,7 +75,7 @@ function extensionVersion(): string {
 
 function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
   return `<header class="app-header">
-    <div class="app-brand"><span class="app-mark" aria-hidden="true">P</span><div><strong>${escapeHtml(options.title ?? 'Pocket PT')}</strong>${options.detail ? `<span>${escapeHtml(options.detail)}</span>` : ''}</div></div>
+    <div class="app-brand"><span class="app-mark" aria-hidden="true">P</span><div><strong>${escapeHtml(options.title ?? PLUGIN_NAME)}</strong>${options.detail ? `<span>${escapeHtml(options.detail)}</span>` : ''}</div></div>
     ${options.action ?? ''}
   </header>`;
 }
@@ -153,7 +154,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
     : credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
-    ${appHeader({ title: 'Pocket Pt 站点导入插件', detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
+    ${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
     <div class="site-context" data-site-context><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(sourceHost(state.sourceOrigin))}</strong><span class="architecture-badge">${escapeHtml(architectureNames[draft.architecture])}</span></div>
     <form id="site-form" novalidate>
       <section class="panel form-section"><div class="section-heading"><h2>站点信息</h2></div>
@@ -193,7 +194,7 @@ function homeView(): string {
   return `<div class="shell home-shell">
     <section class="home-brand" data-home-brand data-home-section="brand">
       <span class="home-brand-mark" aria-hidden="true">P</span>
-      <h1>Pocket Pt</h1>
+      <h1>Pocket Qt</h1>
       <p>站点导入插件 <strong>v${escapeHtml(extensionVersion())}</strong></p>
     </section>
     <nav class="resource-links" data-home-section="links" aria-label="项目相关链接">
@@ -221,15 +222,15 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   if (state.kind === 'idle') {
     root.innerHTML = homeView();
   } else if (state.kind === 'loading') {
-    root.innerHTML = `<div class="shell state-shell" aria-live="polite">${appHeader({ title: '站点导入' })}<section class="state-card"><div class="loading-ring" aria-hidden="true"></div><h1>正在读取</h1><p>${escapeHtml(state.message)}</p></section></div>`;
+    root.innerHTML = `<div class="shell state-shell" aria-live="polite">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><div class="loading-ring" aria-hidden="true"></div><h1>正在读取</h1><p>${escapeHtml(state.message)}</p></section></div>`;
   } else if (state.kind === 'permission') {
-    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: '站点导入' })}<section class="state-card"><span class="state-icon">${icon('lock')}</span><h1>需要站点权限</h1><p>${escapeHtml(state.origin)}</p><button class="primary" type="button" data-action="permission">允许读取本站${icon('arrow')}</button></section></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon">${icon('lock')}</span><h1>需要站点权限</h1><p>${escapeHtml(state.origin)}</p><button class="primary" type="button" data-action="permission">允许读取本站${icon('arrow')}</button></section></div>`;
   } else if (state.kind === 'unsupported') {
-    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: '站点导入' })}<section class="state-card"><span class="state-icon state-icon-muted">${architectureNames[state.detection.id].slice(0, 1)}</span><span class="status-badge">暂不支持</span><h1>${architectureNames[state.detection.id]}</h1><ul class="reason-list">${state.detection.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><button class="secondary" type="button" data-action="retry">重新识别</button></section></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-muted">${architectureNames[state.detection.id].slice(0, 1)}</span><span class="status-badge">暂不支持</span><h1>${architectureNames[state.detection.id]}</h1><ul class="reason-list">${state.detection.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><button class="secondary" type="button" data-action="retry">重新识别</button></section></div>`;
   } else if (state.kind === 'error') {
-    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: 'Pocket Pt 站点导入插件', detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {
-    root.innerHTML = `<div class="shell qr-shell ${state.enlarged ? 'is-enlarged' : ''}">${appHeader({ title: '扫码导入', detail: state.draft.name })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket PT 站点导入二维码"></canvas></div><div class="payload-meta"><span>${architectureNames[state.draft.architecture]}</span><strong>${state.payload.compressedBytes} B</strong></div></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button><button class="primary" type="button" data-action="enlarge">${state.enlarged ? '恢复大小' : '放大二维码'}</button></div></div>`;
+    root.innerHTML = `<div class="shell qr-shell ${state.enlarged ? 'is-enlarged' : ''}">${appHeader({ title: '扫码导入', detail: state.draft.name })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div><div class="payload-meta"><span>${architectureNames[state.draft.architecture]}</span><strong>${state.payload.compressedBytes} B</strong></div></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button><button class="primary" type="button" data-action="enlarge">${state.enlarged ? '恢复大小' : '放大二维码'}</button></div></div>`;
   }
 }
 

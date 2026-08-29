@@ -24,7 +24,7 @@ function isHttpAddress(value: string): boolean {
 export function validateDraft(draft: SiteDraft): DraftValidation {
   const errors: Record<string, string> = {};
   if (draft.scheme === null || expectedScheme[draft.architecture] !== draft.scheme) {
-    errors.architecture = '请选择 Pocket PT 支持的站点架构';
+    errors.architecture = '请选择 Pocket Qt 支持的站点架构';
   }
   if (!draft.name.trim()) errors.name = '请输入站点名称';
   if (!isHttpAddress(draft.address)) errors.address = '请输入有效的 HTTP 或 HTTPS 站点地址';

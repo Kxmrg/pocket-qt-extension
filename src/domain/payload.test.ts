@@ -48,7 +48,7 @@ const expected = {
   },
 };
 
-describe('Pocket PT import payload', () => {
+describe('Pocket Qt import payload', () => {
   it('maps only Flutter SiteConfig fields and selected pages', () => {
     expect(buildImportPayload(draft())).toEqual(expected);
   });
