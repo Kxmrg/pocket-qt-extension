@@ -97,7 +97,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   return {
     architecture: detection.id,
     scheme: schemeMap[detection.id] ?? null,
-    name: siteName(snapshot),
+    name: detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot),
     address: siteAddress(detection.id, snapshot),
     cookie,
     pages: extractTorrentPages(detection.id, snapshot),

@@ -43,10 +43,11 @@ describe('adaptSite', () => {
 
   it('maps TNode CSRF token and passkey', () => {
     const draft = adaptSite(input('tnode', 'https://zhuque.in/torrent/search', {
+      title: '种子列表 - 种子 :: 朱雀 - ZHUQUE :: Powered By TNode',
       meta: [{ name: 'csrf-token', property: '', content: 'csrf-secret' }],
       links: [{ text: '下载', href: 'https://zhuque.in/api/torrent/download/7/pass-key' }],
     }));
-    expect(draft).toMatchObject({ scheme: 1, address: 'https://zhuque.in', cookie: 'session=secret', token: 'csrf-secret', passkey: 'pass-key' });
+    expect(draft).toMatchObject({ scheme: 1, name: 'ZhuQue', address: 'https://zhuque.in', cookie: 'session=secret', token: 'csrf-secret', passkey: 'pass-key' });
   });
 
   it.each([
