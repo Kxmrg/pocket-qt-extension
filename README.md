@@ -4,7 +4,7 @@
 
 ## 功能
 
-- 识别 NexusPHP、TNode、mTorrent 和 HaiDan 架构站点；
+- 识别 NexusPHP、TNode、mTorrent、SunnyPt 和 HaiDanPt 架构站点；
 - 读取并整理当前站点的 Cookie 和必要配置；
 - 支持手动修改站点信息和页面信息；
 - 在 Chrome 侧边栏中生成 Pocket Qt 导入二维码。
