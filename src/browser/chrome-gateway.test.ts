@@ -86,4 +86,53 @@ describe('toOriginPattern', () => {
     expect(getAll).toHaveBeenNthCalledWith(2, { domain: 'hhanclub.net', storeId: 'default' });
     expect(cookies.map((cookie) => cookie.name)).toEqual(['c_secure_pass']);
   });
+
+  it('merges ordinary and active-tab partitioned cookies without dropping same-name values', async () => {
+    const ordinary = [
+      { name: 'session', value: 'ordinary', domain: '.haidan.cc', path: '/', secure: true },
+    ];
+    const partitioned = [
+      {
+        name: 'session', value: 'partitioned', domain: '.haidan.cc', path: '/', secure: true,
+        partitionKey: { topLevelSite: 'https://haidan.cc', hasCrossSiteAncestor: false },
+      },
+      {
+        name: 'cf_clearance', value: 'clearance', domain: '.haidan.cc', path: '/', secure: true,
+        partitionKey: { topLevelSite: 'https://haidan.cc', hasCrossSiteAncestor: false },
+      },
+    ];
+    const getAll = vi.fn()
+      .mockResolvedValueOnce(ordinary)
+      .mockResolvedValueOnce(ordinary)
+      .mockResolvedValueOnce(partitioned)
+      .mockResolvedValueOnce(partitioned);
+    const partitionKey = { topLevelSite: 'https://haidan.cc', hasCrossSiteAncestor: false };
+    const getPartitionKey = vi.fn().mockResolvedValue({ partitionKey });
+    vi.stubGlobal('chrome', {
+      cookies: {
+        getAllCookieStores: vi.fn().mockResolvedValue([{ id: 'default', tabIds: [42] }]),
+        getPartitionKey,
+        getAll,
+      },
+    });
+
+    const cookies = await readCookies('https://www.haidan.cc/torrents.php', 42);
+
+    expect(getPartitionKey).toHaveBeenCalledWith({ tabId: 42, frameId: 0 });
+    expect(getAll).toHaveBeenNthCalledWith(3, {
+      url: 'https://www.haidan.cc/torrents.php',
+      storeId: 'default',
+      partitionKey,
+    });
+    expect(getAll).toHaveBeenNthCalledWith(4, {
+      domain: 'www.haidan.cc',
+      storeId: 'default',
+      partitionKey,
+    });
+    expect(cookies.map((cookie) => `${cookie.name}=${cookie.value}`)).toEqual([
+      'session=ordinary',
+      'session=partitioned',
+      'cf_clearance=clearance',
+    ]);
+  });
 });

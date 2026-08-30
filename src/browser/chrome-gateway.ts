@@ -73,10 +73,25 @@ export async function readCookies(url: string, tabId?: number): Promise<CookieLi
     ? undefined
     : stores.find((store) => store.tabIds.includes(selectedTabId))?.id;
   const hostname = new URL(url).hostname;
-  const cookieQueries = await Promise.allSettled([
-    chrome.cookies.getAll(storeId ? { url, storeId } : { url }),
-    chrome.cookies.getAll(storeId ? { domain: hostname, storeId } : { domain: hostname }),
-  ]);
+  let partitionKey: chrome.cookies.CookiePartitionKey | undefined;
+  if (selectedTabId !== undefined && typeof chrome.cookies.getPartitionKey === 'function') {
+    try {
+      partitionKey = (await chrome.cookies.getPartitionKey({ tabId: selectedTabId, frameId: 0 })).partitionKey;
+    } catch {
+      // Ordinary cookies remain readable if Chrome cannot resolve a partition key.
+    }
+  }
+  const queryDetails: chrome.cookies.GetAllDetails[] = [
+    storeId ? { url, storeId } : { url },
+    storeId ? { domain: hostname, storeId } : { domain: hostname },
+  ];
+  if (partitionKey) {
+    queryDetails.push(
+      storeId ? { url, storeId, partitionKey } : { url, partitionKey },
+      storeId ? { domain: hostname, storeId, partitionKey } : { domain: hostname, partitionKey },
+    );
+  }
+  const cookieQueries = await Promise.allSettled(queryDetails.map((details) => chrome.cookies.getAll(details)));
   const fulfilledQueries = cookieQueries
     .filter((result): result is PromiseFulfilledResult<chrome.cookies.Cookie[]> => result.status === 'fulfilled');
   if (fulfilledQueries.length === 0) throw new Error('Chrome Cookie API unavailable');
@@ -84,7 +99,10 @@ export async function readCookies(url: string, tabId?: number): Promise<CookieLi
   const uniqueCookies = new Map<string, chrome.cookies.Cookie>();
   for (const result of fulfilledQueries) {
     for (const cookie of result.value) {
-      const key = `${cookie.name}\u0000${cookie.domain}\u0000${cookie.path}`;
+      const partition = cookie.partitionKey
+        ? `${cookie.partitionKey.topLevelSite ?? ''}\u0000${cookie.partitionKey.hasCrossSiteAncestor ?? ''}`
+        : '';
+      const key = `${cookie.name}\u0000${cookie.domain}\u0000${cookie.path}\u0000${partition}`;
       if (!uniqueCookies.has(key)) uniqueCookies.set(key, cookie);
     }
   }

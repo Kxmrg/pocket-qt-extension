@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 interface ExtensionManifest {
   name?: string;
+  minimum_chrome_version?: string;
   permissions?: string[];
   host_permissions?: string[];
   optional_host_permissions?: string[];
@@ -35,5 +36,11 @@ describe('side panel manifest', () => {
     expect(manifest.permissions).not.toContain('activeTab');
     expect(manifest.host_permissions).toEqual(['http://*/*', 'https://*/*']);
     expect(manifest.optional_host_permissions).toBeUndefined();
+  });
+
+  it('requires the Chrome version that can resolve the active frame partition key', () => {
+    const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
+
+    expect(manifest.minimum_chrome_version).toBe('132');
   });
 });
