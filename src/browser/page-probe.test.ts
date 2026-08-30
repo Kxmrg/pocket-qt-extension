@@ -14,6 +14,27 @@ afterEach(() => {
 });
 
 describe('collectPageSnapshot', () => {
+  it('marks the HaiDan top navigation profile as the current user UID', () => {
+    document.body.innerHTML = `
+      <div class="userinfo medium border-box">
+        <div class="userinfo-half">
+          <div class="user_sub_item" href="userdetails.php?id=63618">
+            <span><a href="userdetails.php?id=63618"><b>weisle</b></a></span>
+          </div>
+        </div>
+      </div>
+      <div class="time_col"><a href="userdetails.php?id=62090">happysky0816</a></div>
+    `;
+
+    const result = collectPageSnapshot();
+
+    expect(result.candidates).toContainEqual({
+      key: 'uid',
+      value: '63618',
+      source: 'current-user-profile',
+    });
+  });
+
   it('collects bounded public architecture signals and excludes password values', () => {
     document.head.innerHTML = `
       <meta name="generator" content="NexusPHP">

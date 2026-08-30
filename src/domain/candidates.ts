@@ -54,6 +54,19 @@ export function selectCandidate(field: CandidateField, snapshot: PageSnapshot): 
   const found: FieldCandidate[] = [];
   const pattern = aliases[field];
 
+  if (field === 'uid') {
+    const currentUser = snapshot.candidates.find((candidate) => (
+      candidate.source === 'current-user-profile' && pattern.test(candidate.key)
+    ));
+    if (currentUser?.value.trim()) {
+      return {
+        value: currentUser.value.trim(),
+        alternatives: [{ value: currentUser.value.trim(), source: '顶部当前用户', score: 160 }],
+        needsConfirmation: false,
+      };
+    }
+  }
+
   for (const meta of snapshot.meta) {
     const key = meta.name || meta.property;
     if (pattern.test(key)) addCandidate(found, meta.content, `meta:${key}`, 120);

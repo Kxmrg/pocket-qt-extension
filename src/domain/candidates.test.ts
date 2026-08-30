@@ -50,6 +50,20 @@ describe('selectCandidate', () => {
     expect(result.value).toBe('42');
   });
 
+  it('uses only the current HaiDan user UID when uploader profile links are present', () => {
+    const result = selectCandidate('uid', snapshot({
+      candidates: [{ key: 'uid', value: '63618', source: 'current-user-profile' }],
+      links: [
+        { text: 'weisle', href: 'https://haidan.cc/userdetails.php?id=63618' },
+        { text: 'happysky0816', href: 'https://haidan.cc/userdetails.php?id=62090' },
+        { text: 'WhiteLycoris', href: 'https://haidan.cc/userdetails.php?id=52698' },
+      ],
+    }));
+
+    expect(result).toMatchObject({ value: '63618', needsConfirmation: false });
+    expect(result.alternatives.map((item) => item.value)).toEqual(['63618']);
+  });
+
   it('extracts an mTorrent UUID from its profile detail route', () => {
     const result = selectCandidate('uid', snapshot({
       url: 'https://kp.m-team.cc/browse',

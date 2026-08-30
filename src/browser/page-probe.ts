@@ -62,6 +62,18 @@ export function collectPageSnapshot(): PageSnapshot {
   }
 
   const candidates: PageSnapshot['candidates'] = [];
+  const currentUserProfile = document.querySelector<HTMLAnchorElement>('.userinfo a[href*="userdetails.php"]');
+  if (currentUserProfile) {
+    try {
+      const profileUrl = new URL(currentUserProfile.href, current.href);
+      const uid = profileUrl.pathname.toLowerCase().endsWith('/userdetails.php')
+        ? profileUrl.searchParams.get('id')
+        : null;
+      if (uid) candidates.push({ key: 'uid', value: limit(uid), source: 'current-user-profile' });
+    } catch {
+      // Ignore malformed profile links and continue collecting other signals.
+    }
+  }
   for (const input of Array.from(document.querySelectorAll<HTMLInputElement>('input[name], input[id]')).slice(0, 500)) {
     if (input.type.toLowerCase() === 'password') continue;
     const key = input.name || input.id;
