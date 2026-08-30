@@ -10,6 +10,7 @@ const expectedScheme: Record<string, number> = {
   tnode: 1,
   mtorrent: 2,
   haidan: 3,
+  sunnypt: 4,
 };
 
 function isHttpAddress(value: string): boolean {

@@ -33,6 +33,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   tnode: 'TNode',
   mtorrent: 'mTorrent',
   haidan: 'HaiDanPt',
+  sunnypt: 'SunnyPt',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
   unknown: '未知架构',
@@ -116,7 +117,7 @@ function credentialField(
 }
 
 function architectureSelect(draft: SiteDraft, errors: Record<string, string>): string {
-  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent', 'haidan'];
+  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt'];
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
@@ -146,10 +147,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
   const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? '令牌' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
   const cookieLabel = draft.architecture === 'mtorrent' ? 'UUID' : 'Cookie';
-  const tokenField = draft.architecture === 'nexusphp'
+  const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent' || draft.architecture === 'sunnypt'
     ? ''
     : credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;

@@ -3,7 +3,7 @@ import QRCode from 'qrcode';
 import type { SiteDraft } from './adapt-site';
 
 export interface SiteConfigPayload {
-  scheme: 0 | 1 | 2 | 3;
+  scheme: 0 | 1 | 2 | 3 | 4;
   name: string;
   address: string;
   cookie: string;
@@ -48,7 +48,7 @@ export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
       tags: draft.tags,
       downloadTags: draft.downloadTags,
       widget: draft.widget,
-      token: draft.scheme === 0 ? null : draft.token,
+      token: draft.scheme === 0 || draft.scheme === 4 ? null : draft.token,
       search: draft.search,
       top: draft.top,
     },

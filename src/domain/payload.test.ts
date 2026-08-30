@@ -57,6 +57,15 @@ describe('Pocket Qt import payload', () => {
     expect(buildImportPayload(draft({ token: 'must-not-be-sent' })).site.token).toBeNull();
   });
 
+  it('never exports a short-lived SunnyPT bearer token', () => {
+    const payload = buildImportPayload(draft({
+      architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top',
+      token: 'short-lived-bearer',
+    }));
+    expect(payload.site.scheme).toBe(4);
+    expect(payload.site.token).toBeNull();
+  });
+
   it('round trips the versioned raw-deflate Base64URL payload', () => {
     const encoded = encodeImportPayload(draft());
     expect(encoded.text.startsWith('pocket-pt://import/site?v=1&data=')).toBe(true);

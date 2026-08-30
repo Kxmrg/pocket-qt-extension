@@ -91,6 +91,7 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
     return fixed('mtorrent', '固定域名：M-Team');
   }
   if (isHost(snapshot.host, 'haidan.cc')) return fixed('haidan', '固定域名：haidan.cc');
+  if (isHost(snapshot.host, 'sunnypt.top')) return fixed('sunnypt', '固定域名：sunnypt.top');
 
   for (const result of [scoreUnit3d(snapshot), scoreGazelle(snapshot), scoreNexusPhp(snapshot)]) {
     if (result.explicit || result.score >= 3) {

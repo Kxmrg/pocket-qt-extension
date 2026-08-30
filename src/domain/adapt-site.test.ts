@@ -69,6 +69,19 @@ describe('adaptSite', () => {
     expect(draft).toMatchObject({ scheme: 3, address: 'https://haidan.cc', cookie: 'session=secret', token: '42' });
   });
 
+  it('maps SunnyPT to scheme 4 and keeps only the browser Cookie', () => {
+    const draft = adaptSite(input('sunnypt', 'https://sunnypt.top/torrents?category=All', {
+      title: 'SUNNYPT',
+    }));
+    expect(draft).toMatchObject({
+      architecture: 'sunnypt', scheme: 4, name: 'SUNNYPT',
+      address: 'https://sunnypt.top', cookie: 'session=secret', token: null,
+    });
+    expect(draft.pages).toEqual([
+      { name: '综合', path: '/torrents?category=All', tags: null, selected: true },
+    ]);
+  });
+
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
     expect(draft.fieldWarnings).toMatchObject({ cookie: '未自动获取 UUID', token: '请前往控制台实验室复制令牌并手动填写' });

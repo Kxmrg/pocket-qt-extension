@@ -151,6 +151,18 @@ describe('renderPopup', () => {
     expect(root.querySelector('#passkey')).not.toBeNull();
   });
 
+  it('shows SunnyPt as supported and hides token and passkey inputs', () => {
+    renderPopup(root, {
+      kind: 'ready',
+      draft: draft({ architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top' }),
+      errors: {}, revealed: new Set(), sourceOrigin: 'https://sunnypt.top',
+    }, actions());
+
+    expect(root.querySelector('[data-architecture-option="sunnypt"]')?.textContent).toContain('SunnyPt');
+    expect(root.querySelector('#token')).toBeNull();
+    expect(root.querySelector('#passkey')).toBeNull();
+  });
+
   it('explains how to separate multiple downloader tags', () => {
     renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, actions());
     expect(root.querySelector<HTMLInputElement>('#download-tags')?.placeholder).toBe('多个标签用英文逗号分隔');

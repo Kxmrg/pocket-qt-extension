@@ -3,6 +3,7 @@ export type ArchitectureId =
   | 'tnode'
   | 'mtorrent'
   | 'haidan'
+  | 'sunnypt'
   | 'gazelle'
   | 'unit3d'
   | 'unknown';

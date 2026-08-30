@@ -12,6 +12,7 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   tnode: '/torrent/search',
   mtorrent: '/browse',
   haidan: '/torrents.php',
+  sunnypt: '/torrents?category=All',
 };
 
 export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string): DraftPage | null {

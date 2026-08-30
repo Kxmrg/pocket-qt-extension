@@ -61,6 +61,16 @@ describe('detectArchitecture', () => {
     expect(result).toMatchObject({ id: 'nexusphp', supported: true });
   });
 
+  it('recognizes SunnyPT as its independent architecture without legacy php route signals', () => {
+    const result = detectArchitecture(snapshot('https://sunnypt.top/torrents?category=All', {
+      title: 'SUNNYPT',
+      resources: ['/_next/static/chunks/app/torrents/page.js'],
+      links: [{ text: '种子', href: 'https://sunnypt.top/torrents?category=All' }],
+    }));
+
+    expect(result).toMatchObject({ id: 'sunnypt', supported: true, confidence: 'certain' });
+  });
+
   it('recognizes a NexusPHP route combination without branding', () => {
     const result = detectArchitecture(snapshot('https://nexus.example/', {
       links: [

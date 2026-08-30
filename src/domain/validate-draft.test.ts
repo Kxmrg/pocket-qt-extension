@@ -56,4 +56,13 @@ describe('validateDraft', () => {
     const result = validateDraft(validDraft({ architecture: 'haidan', scheme: 3, token: '' }));
     expect(result.errors.token).toBe('请输入 UID');
   });
+
+  it('accepts SunnyPT with scheme 4 and Cookie without a stored token', () => {
+    const result = validateDraft(validDraft({
+      architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top',
+      pages: [{ name: '综合', path: '/torrents?category=All', tags: null, selected: true }],
+      token: null,
+    }));
+    expect(result).toEqual({ valid: true, errors: {} });
+  });
 });

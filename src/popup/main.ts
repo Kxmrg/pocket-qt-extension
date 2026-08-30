@@ -22,11 +22,12 @@ const root: HTMLElement = rootElement;
 let state: PopupState = { kind: 'idle' };
 let activeContext: ActivePageContext | null = null;
 
-const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3> = {
+const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
   haidan: 3,
+  sunnypt: 4,
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -98,7 +99,7 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' ? null : draft.token,
+        token: architecture === 'nexusphp' || architecture === 'sunnypt' ? null : draft.token,
         pages,
         fieldWarnings: {},
       };

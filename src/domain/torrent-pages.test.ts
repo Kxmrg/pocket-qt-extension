@@ -78,4 +78,13 @@ describe('extractTorrentPages', () => {
       selected: true,
     });
   });
+
+  it('uses the SunnyPT torrent route for a manually added page', () => {
+    expect(createManualPage('sunnypt')).toEqual({
+      name: '',
+      path: '/torrents?category=All',
+      tags: null,
+      selected: true,
+    });
+  });
 });
