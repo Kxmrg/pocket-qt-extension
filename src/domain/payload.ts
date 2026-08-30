@@ -43,7 +43,7 @@ export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
       pages: draft.pages
         .filter((page) => page.selected)
         .map(({ name, path, tags }) => ({ name, path, tags })),
-      passkey: draft.passkey,
+      passkey: draft.scheme === 4 ? null : draft.passkey,
       userAgent: draft.userAgent,
       tags: draft.tags,
       downloadTags: draft.downloadTags,

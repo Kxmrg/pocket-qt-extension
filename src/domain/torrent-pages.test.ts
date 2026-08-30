@@ -87,4 +87,13 @@ describe('extractTorrentPages', () => {
       selected: true,
     });
   });
+
+  it('falls back to the SunnyPT list route when collected from a detail page', () => {
+    expect(extractTorrentPages(
+      'sunnypt',
+      snapshotWithLinks([], 'https://sunnypt.top/torrent/440'),
+    )).toEqual([
+      { name: '综合', path: '/torrents?category=All', tags: null, selected: true },
+    ]);
+  });
 });

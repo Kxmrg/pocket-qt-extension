@@ -66,6 +66,14 @@ describe('Pocket Qt import payload', () => {
     expect(payload.site.token).toBeNull();
   });
 
+  it('never exports an unnecessary SunnyPT passkey', () => {
+    const payload = buildImportPayload(draft({
+      architecture: 'sunnypt', scheme: 4, address: 'https://sunnypt.top',
+      passkey: 'must-not-be-sent',
+    }));
+    expect(payload.site.passkey).toBeNull();
+  });
+
   it('round trips the versioned raw-deflate Base64URL payload', () => {
     const encoded = encodeImportPayload(draft());
     expect(encoded.text.startsWith('pocket-pt://import/site?v=1&data=')).toBe(true);

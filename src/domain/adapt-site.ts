@@ -102,7 +102,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     address: siteAddress(detection.id, snapshot),
     cookie,
     pages: extractTorrentPages(detection.id, snapshot),
-    passkey: passkey.value || null,
+    passkey: detection.id === 'sunnypt' ? null : passkey.value || null,
     userAgent: snapshot.userAgent || null,
     tags: null,
     downloadTags: null,

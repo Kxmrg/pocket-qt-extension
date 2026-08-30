@@ -42,6 +42,11 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
   if (id === 'tnode') {
     return [{ name: '综合', path: '/torrent/search', tags: null, selected: true }];
   }
+  if (id === 'sunnypt') {
+    const page = draftPageFromSnapshot(snapshot, '综合');
+    if (page?.path === '/torrents' || page?.path.startsWith('/torrents?')) return [page];
+    return [{ name: '综合', path: '/torrents?category=All', tags: null, selected: true }];
+  }
   const page = draftPageFromSnapshot(snapshot, '综合');
   return page ? [page] : [];
 }
