@@ -32,7 +32,6 @@ describe('extractTorrentPages', () => {
   });
 
   it.each([
-    ['tnode', 'https://zhuque.in/'],
     ['mtorrent', 'https://kp.m-team.cc/'],
     ['haidan', 'https://haidan.cc/'],
   ] as const)('uses the current root path for %s instead of an architecture default', (id, url) => {
@@ -41,16 +40,21 @@ describe('extractTorrentPages', () => {
     ]);
   });
 
-  it('returns one current page for TNode and mTorrent', () => {
+  it('returns the fixed comprehensive page for TNode', () => {
     const tnode = extractTorrentPages('tnode', snapshotWithLinks([
       ['综合', 'https://zhuque.in/torrent/search'],
       ['电影', 'https://zhuque.in/torrent/search?category=movie'],
-    ], 'https://zhuque.in/'));
+    ], 'https://zhuque.in/torrent/info/123'));
+
+    expect(tnode).toEqual([{ name: '综合', path: '/torrent/search', tags: null, selected: true }]);
+  });
+
+  it('returns one current page for mTorrent', () => {
     const mtorrent = extractTorrentPages('mtorrent', snapshotWithLinks([
       ['综合', 'https://kp.m-team.cc/browse'],
       ['成人', 'https://kp.m-team.cc/browse/adult'],
     ], 'https://kp.m-team.cc/'));
-    expect(tnode).toEqual([{ name: '综合', path: '/', tags: null, selected: true }]);
+
     expect(mtorrent).toEqual([{ name: '综合', path: '/', tags: null, selected: true }]);
   });
 

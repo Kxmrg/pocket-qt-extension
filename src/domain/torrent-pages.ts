@@ -37,7 +37,10 @@ export function createManualPage(id: ArchitectureId): DraftPage {
   };
 }
 
-export function extractTorrentPages(_id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
+export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
+  if (id === 'tnode') {
+    return [{ name: '综合', path: '/torrent/search', tags: null, selected: true }];
+  }
   const page = draftPageFromSnapshot(snapshot, '综合');
   return page ? [page] : [];
 }
