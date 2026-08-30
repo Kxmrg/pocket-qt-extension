@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Pocket Qt 站点导入插件",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "从已登录的 PT 站点生成 Pocket Qt 导入二维码",
   "minimum_chrome_version": "132",
   "permissions": ["tabs", "scripting", "cookies", "sidePanel"],
