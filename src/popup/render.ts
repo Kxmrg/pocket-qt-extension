@@ -155,7 +155,7 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
     ${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
-    <div class="site-context" data-site-context><span class="status-dot" aria-hidden="true"></span><strong>${escapeHtml(sourceHost(state.sourceOrigin))}</strong><span class="architecture-badge">${escapeHtml(architectureNames[draft.architecture])}</span></div>
+    <div class="site-context" data-site-context><span class="architecture-badge">${escapeHtml(architectureNames[draft.architecture])}</span><strong class="site-domain">${escapeHtml(sourceHost(state.sourceOrigin))}</strong></div>
     <form id="site-form" novalidate>
       <section class="panel form-section"><div class="section-heading"><h2>站点信息</h2></div>
         <div class="field-grid">${architectureSelect(draft, errors)}

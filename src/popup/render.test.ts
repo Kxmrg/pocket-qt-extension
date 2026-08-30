@@ -117,6 +117,11 @@ describe('renderPopup', () => {
     ]);
     expect((root.querySelector('#page-name-0') as HTMLInputElement).value).toBe('综合');
     expect((root.querySelector('#page-path-0') as HTMLInputElement).value).toBe('/torrents.php');
+    expect([...root.querySelector('[data-site-context]')!.children].map((element) => element.className)).toEqual([
+      'architecture-badge',
+      'site-domain',
+    ]);
+    expect(root.querySelector('[data-site-context] .status-dot')).toBeNull();
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('pt.example');
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
     expect(root.querySelector('[data-home-guide]')).toBeNull();
