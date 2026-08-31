@@ -48,7 +48,7 @@ function scoreGazelle(snapshot: PageSnapshot): ScoreResult {
   const links = hrefs(snapshot);
   const markers = new Set(snapshot.domMarkers ?? []);
   const hasGazelleBrand = /(?:powered by\s+)?gazelle/.test(haystack);
-  const hasGazellePwSignature = markers.has('gazellepw-cover-wall') || markers.has('gazellepw-movie-filters');
+  const hasGazellePwSignature = markers.has('gazellepw-cover-wall') && markers.has('gazellepw-movie-filters');
   const hasClassicStructure = [
     'body#torrents',
     'gazelle-grouping-table',
@@ -104,6 +104,15 @@ function fixed(id: ArchitectureId, reason: string): DetectionResult {
   return { id, supported: true, confidence: 'certain', reasons: [reason] };
 }
 
+function detectionFromScore(result: ScoreResult): DetectionResult {
+  return {
+    id: result.id,
+    supported: result.supported,
+    confidence: result.explicit ? 'certain' : 'likely',
+    reasons: result.reasons,
+  };
+}
+
 export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   if (isHost(snapshot.host, 'zhuque.in')) return fixed('tnode', '固定域名：zhuque.in');
   if (isHost(snapshot.host, 'm-team.cc') || isHost(snapshot.host, 'm-team.io')) {
@@ -112,14 +121,12 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   if (isHost(snapshot.host, 'haidan.cc')) return fixed('haidan', '固定域名：haidan.cc');
   if (isHost(snapshot.host, 'sunnypt.top')) return fixed('sunnypt', '固定域名：sunnypt.top');
 
-  for (const result of [scoreUnit3d(snapshot), scoreGazelle(snapshot), scoreNexusPhp(snapshot)]) {
+  const gazelle = scoreGazelle(snapshot);
+  if (!gazelle.explicit && gazelle.score >= 3) return detectionFromScore(gazelle);
+
+  for (const result of [scoreUnit3d(snapshot), gazelle, scoreNexusPhp(snapshot)]) {
     if (result.explicit || result.score >= 3) {
-      return {
-        id: result.id,
-        supported: result.supported,
-        confidence: result.explicit ? 'certain' : 'likely',
-        reasons: result.reasons,
-      };
+      return detectionFromScore(result);
     }
   }
 

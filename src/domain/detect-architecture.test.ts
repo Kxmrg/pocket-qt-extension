@@ -61,6 +61,23 @@ describe('detectArchitecture', () => {
     expect(result).toMatchObject({ id: 'gazelle', supported: false });
   });
 
+  it('does not identify a page as GazellePW from movie filters alone', () => {
+    const result = detectArchitecture(snapshot('https://example.com/search.php', {
+      domMarkers: ['gazellepw-movie-filters'],
+    }));
+
+    expect(result).toEqual({ id: 'unknown', supported: false, confidence: 'unknown', reasons: [] });
+  });
+
+  it('prefers a classic Gazelle structure over incidental UNIT3D page text', () => {
+    const result = detectArchitecture(snapshot('https://gazelle.example/torrents.php', {
+      textSample: 'Forum post: I also use UNIT3D on another tracker.',
+      domMarkers: ['body#torrents', 'gazelle-grouping-table', 'gazelle-group-row', 'gazelle-torrent-row'],
+    }));
+
+    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
+  });
+
   it.each([
     ['https://example.com/collages.php'],
     ['https://example.com/torrents.php'],
