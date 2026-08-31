@@ -70,7 +70,7 @@ function scoreGazelle(snapshot: PageSnapshot): ScoreResult {
     ...(routeSignals[1] ? ['检测到 Gazelle 合集路由'] : []),
     ...(routeSignals[2] ? ['检测到 Gazelle 求种路由'] : []),
   ];
-  const score = hasGazellePwSignature || hasClassicStructure || explicit ? 3 : 0;
+  const score = hasGazellePwSignature || hasClassicStructure ? 4 : explicit ? 3 : 0;
   return {
     id: 'gazelle',
     score,
@@ -122,7 +122,7 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   if (isHost(snapshot.host, 'sunnypt.top')) return fixed('sunnypt', '固定域名：sunnypt.top');
 
   const gazelle = scoreGazelle(snapshot);
-  if (!gazelle.explicit && gazelle.score >= 3) return detectionFromScore(gazelle);
+  if (gazelle.score >= 4) return detectionFromScore(gazelle);
 
   for (const result of [scoreUnit3d(snapshot), gazelle, scoreNexusPhp(snapshot)]) {
     if (result.explicit || result.score >= 3) {

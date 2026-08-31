@@ -69,13 +69,17 @@ describe('detectArchitecture', () => {
     expect(result).toEqual({ id: 'unknown', supported: false, confidence: 'unknown', reasons: [] });
   });
 
-  it('prefers a classic Gazelle structure over incidental UNIT3D page text', () => {
+  it('prefers a branded and routed classic Gazelle structure over incidental UNIT3D page text', () => {
     const result = detectArchitecture(snapshot('https://gazelle.example/torrents.php', {
-      textSample: 'Forum post: I also use UNIT3D on another tracker.',
+      textSample: 'Powered by Gazelle. Forum post: I also use UNIT3D on another tracker.',
       domMarkers: ['body#torrents', 'gazelle-grouping-table', 'gazelle-group-row', 'gazelle-torrent-row'],
+      links: [
+        { text: 'Collages', href: 'https://gazelle.example/collages.php' },
+        { text: 'Requests', href: 'https://gazelle.example/requests.php' },
+      ],
     }));
 
-    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
+    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'certain' });
   });
 
   it.each([
