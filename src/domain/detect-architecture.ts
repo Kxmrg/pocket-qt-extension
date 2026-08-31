@@ -46,19 +46,38 @@ function scoreUnit3d(snapshot: PageSnapshot): ScoreResult {
 function scoreGazelle(snapshot: PageSnapshot): ScoreResult {
   const haystack = searchable(snapshot);
   const links = hrefs(snapshot);
-  const explicit = /(?:powered by\s+)?gazelle/.test(haystack);
-  const signals = [
+  const markers = new Set(snapshot.domMarkers ?? []);
+  const hasGazelleBrand = /(?:powered by\s+)?gazelle/.test(haystack);
+  const hasGazellePwSignature = markers.has('gazellepw-cover-wall') || markers.has('gazellepw-movie-filters');
+  const hasClassicStructure = [
+    'body#torrents',
+    'gazelle-grouping-table',
+    'gazelle-group-row',
+    'gazelle-torrent-row',
+  ].every((marker) => markers.has(marker));
+  const routeSignals = [
     links.some((href) => /\/ajax\.php\?action=/.test(href)),
     links.some((href) => /\/collages\.php(?:[?#]|$)/.test(href)),
     links.some((href) => /\/requests\.php(?:[?#]|$)/.test(href)),
   ];
+  const hasIndependentCommonRoutes = routeSignals.filter(Boolean).length >= 2;
+  const explicit = hasGazelleBrand && hasIndependentCommonRoutes;
   const reasons = [
-    ...(explicit ? ['检测到 Gazelle 标识'] : []),
-    ...(signals[0] ? ['检测到 Gazelle AJAX 路由'] : []),
-    ...(signals[1] ? ['检测到 Gazelle 合集路由'] : []),
-    ...(signals[2] ? ['检测到 Gazelle 求种路由'] : []),
+    ...(hasGazellePwSignature ? ['检测到 GazellePW 海报墙/筛选结构'] : []),
+    ...(hasClassicStructure ? ['检测到 Gazelle 分组种子表结构'] : []),
+    ...(explicit ? ['检测到 Gazelle 标识和独立路由'] : []),
+    ...(routeSignals[0] ? ['检测到 Gazelle AJAX 路由'] : []),
+    ...(routeSignals[1] ? ['检测到 Gazelle 合集路由'] : []),
+    ...(routeSignals[2] ? ['检测到 Gazelle 求种路由'] : []),
   ];
-  return { id: 'gazelle', score: (explicit ? 10 : 0) + signals.filter(Boolean).length, explicit, reasons, supported: false };
+  const score = hasGazellePwSignature || hasClassicStructure || explicit ? 3 : 0;
+  return {
+    id: 'gazelle',
+    score,
+    explicit,
+    reasons,
+    supported: !hasGazellePwSignature && (hasClassicStructure || explicit),
+  };
 }
 
 function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {

@@ -49,6 +49,13 @@ describe('extractTorrentPages', () => {
     expect(tnode).toEqual([{ name: '综合', path: '/torrent/search', tags: null, selected: true }]);
   });
 
+  it('returns the fixed torrent and collage pages for Gazelle', () => {
+    expect(extractTorrentPages('gazelle', snapshotWithLinks([], 'https://dicmusic.com/torrents.php'))).toEqual([
+      { name: '种子', path: '/torrents.php', tags: null, selected: true },
+      { name: '合集', path: '/collages.php', tags: null, selected: true },
+    ]);
+  });
+
   it('returns one current page for mTorrent', () => {
     const mtorrent = extractTorrentPages('mtorrent', snapshotWithLinks([
       ['综合', 'https://kp.m-team.cc/browse'],
@@ -83,6 +90,15 @@ describe('extractTorrentPages', () => {
     expect(createManualPage('sunnypt')).toEqual({
       name: '',
       path: '/torrents?category=All',
+      tags: null,
+      selected: true,
+    });
+  });
+
+  it('uses the Gazelle torrent route for a manually added page', () => {
+    expect(createManualPage('gazelle')).toEqual({
+      name: '',
+      path: '/torrents.php',
       tags: null,
       selected: true,
     });

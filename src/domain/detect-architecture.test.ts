@@ -42,16 +42,32 @@ describe('detectArchitecture', () => {
     expect(result).toMatchObject({ id: 'unit3d', supported: false });
   });
 
-  it('recognizes Gazelle before Nexus-like links', () => {
+  it('recognizes original Gazelle from its classic structure and common routes', () => {
     const result = detectArchitecture(snapshot('https://gazelle.example/', {
-      textSample: 'Powered by Gazelle',
+      domMarkers: ['body#torrents', 'gazelle-grouping-table', 'gazelle-group-row', 'gazelle-torrent-row'],
       links: [
         { text: 'Collages', href: 'https://gazelle.example/collages.php' },
         { text: 'Requests', href: 'https://gazelle.example/requests.php' },
-        { text: 'Browse', href: 'https://gazelle.example/torrents.php' },
       ],
     }));
+    expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
+  });
+
+  it('keeps GazellePW poster-wall pages unsupported in Phase 1', () => {
+    const result = detectArchitecture(snapshot('https://greatposterwall.com/torrents.php', {
+      domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
+    }));
+
     expect(result).toMatchObject({ id: 'gazelle', supported: false });
+  });
+
+  it.each([
+    ['https://example.com/collages.php'],
+    ['https://example.com/torrents.php'],
+  ])('does not identify a normal PHP page as Gazelle from one weak route: %s', (url) => {
+    expect(detectArchitecture(snapshot('https://example.com/', {
+      links: [{ text: 'Ordinary link', href: url }],
+    }))).toEqual({ id: 'unknown', supported: false, confidence: 'unknown', reasons: [] });
   });
 
   it('recognizes an explicit NexusPHP marker', () => {

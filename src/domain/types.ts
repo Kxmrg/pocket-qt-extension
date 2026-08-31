@@ -35,6 +35,7 @@ export interface PageSnapshot {
   meta: Array<{ name: string; property: string; content: string }>;
   resources: string[];
   links: PageLink[];
+  domMarkers?: string[];
   textSample: string;
   storage: StorageEntry[];
   candidates: PageCandidate[];

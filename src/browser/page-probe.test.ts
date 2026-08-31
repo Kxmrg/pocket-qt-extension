@@ -71,6 +71,31 @@ describe('collectPageSnapshot', () => {
     expect(result.links.some((link) => link.href.includes('outside.example'))).toBe(false);
   });
 
+  it('collects fixed Gazelle structure markers without page text or input values', () => {
+    document.body.id = 'torrents';
+    document.body.innerHTML = `
+      <table id="torrent_table" class="torrent_table grouping">
+        <tr class="group"><td>Album title that must not be collected</td></tr>
+        <tr class="edition"><td>Original Release</td></tr>
+        <tr class="group_torrent"><td>Torrent</td></tr>
+      </table>
+      <input name="private-search" value="input-value-that-must-not-be-collected">
+    `;
+
+    const result = collectPageSnapshot();
+
+    expect(result.domMarkers).toEqual(expect.arrayContaining([
+      'body#torrents',
+      'gazelle-grouping-table',
+      'gazelle-group-row',
+      'gazelle-edition-row',
+      'gazelle-torrent-row',
+    ]));
+    expect(result.domMarkers?.every((marker) => /^(body#torrents|gazelle-(grouping-table|group-row|edition-row|torrent-row)|gazellepw-(cover-wall|movie-filters))$/.test(marker))).toBe(true);
+    expect(result.domMarkers).not.toContain('Album title that must not be collected');
+    expect(result.domMarkers).not.toContain('input-value-that-must-not-be-collected');
+  });
+
   it('still collects the page when browser privacy rules block storage and document cookies', () => {
     vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
       throw new DOMException('blocked', 'SecurityError');

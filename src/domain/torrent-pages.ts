@@ -13,6 +13,7 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   mtorrent: '/browse',
   haidan: '/torrents.php',
   sunnypt: '/torrents?category=All',
+  gazelle: '/torrents.php',
 };
 
 export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string): DraftPage | null {
@@ -39,6 +40,12 @@ export function createManualPage(id: ArchitectureId): DraftPage {
 }
 
 export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
+  if (id === 'gazelle') {
+    return [
+      { name: '种子', path: '/torrents.php', tags: null, selected: true },
+      { name: '合集', path: '/collages.php', tags: null, selected: true },
+    ];
+  }
   if (id === 'tnode') {
     return [{ name: '综合', path: '/torrent/search', tags: null, selected: true }];
   }

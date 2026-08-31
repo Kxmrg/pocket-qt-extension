@@ -36,8 +36,12 @@ const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5>> = {
   gazelle: 5,
 };
 
-function siteName(snapshot: PageSnapshot): string {
+function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
   const withoutGenerator = snapshot.title.replace(/\s*[-|｜:]?\s*Powered by\b.*$/i, '');
+  if (id === 'gazelle') {
+    const finalSegment = withoutGenerator.split('::').at(-1)?.trim();
+    if (finalSegment) return finalSegment;
+  }
   const brand = withoutGenerator.split(/\s+(?:-|::|\||｜)\s+/)[0] ?? '';
   const cleaned = brand
     .replace(/\s*[-|｜]\s*(?:首页|home|index)\s*$/i, '')
@@ -99,7 +103,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   return {
     architecture: detection.id,
     scheme: schemeMap[detection.id] ?? null,
-    name: detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot),
+    name: detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot, detection.id),
     address: siteAddress(detection.id, snapshot),
     cookie,
     pages: extractTorrentPages(detection.id, snapshot),

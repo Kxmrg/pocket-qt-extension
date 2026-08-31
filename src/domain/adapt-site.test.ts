@@ -82,11 +82,15 @@ describe('adaptSite', () => {
     ]);
   });
 
-  it('maps Gazelle to scheme 5 without a token', () => {
+  it('maps Gazelle to scheme 5, using the final title segment as its site name', () => {
     const gazelle = adaptSite(input('gazelle', 'https://dicmusic.com/torrents.php', {
       title: '浏览种子 :: DIC Music',
     }));
-    expect(gazelle).toMatchObject({ architecture: 'gazelle', scheme: 5, token: null });
+    expect(gazelle).toMatchObject({ architecture: 'gazelle', scheme: 5, name: 'DIC Music', token: null });
+    expect(gazelle.pages).toEqual([
+      { name: '种子', path: '/torrents.php', tags: null, selected: true },
+      { name: '合集', path: '/collages.php', tags: null, selected: true },
+    ]);
   });
 
   it('marks required special credentials when extraction fails', () => {

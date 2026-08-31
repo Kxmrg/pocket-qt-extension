@@ -122,13 +122,55 @@ describe('collectSiteDraft', () => {
     expect('draft' in result).toBe(false);
   });
 
-  it('returns an editable unknown draft for manual architecture selection', async () => {
+  it('collects a supported original Gazelle site through detection, adaptation, and page generation', async () => {
+    const result = await collectSiteDraft(deps({
+      getContext: async () => ({
+        url: 'https://dicmusic.com/torrents.php', origin: 'https://dicmusic.com', hasPermission: true,
+      }),
+      readSnapshot: async () => ({
+        ...nexusSnapshot(),
+        url: 'https://dicmusic.com/torrents.php',
+        origin: 'https://dicmusic.com',
+        host: 'dicmusic.com',
+        title: '浏览种子 :: DIC Music',
+        meta: [],
+        domMarkers: ['body#torrents', 'gazelle-grouping-table', 'gazelle-group-row', 'gazelle-torrent-row'],
+        links: [
+          { text: 'Collages', href: 'https://dicmusic.com/collages.php' },
+          { text: 'Requests', href: 'https://dicmusic.com/requests.php' },
+        ],
+      }),
+    }));
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.detection).toMatchObject({ id: 'gazelle', supported: true });
+    expect(result.draft).toMatchObject({ architecture: 'gazelle', scheme: 5, name: 'DIC Music' });
+    expect(result.draft.pages).toEqual([
+      { name: '种子', path: '/torrents.php', tags: null, selected: true },
+      { name: '合集', path: '/collages.php', tags: null, selected: true },
+    ]);
+  });
+
+  it('keeps GazellePW unsupported', async () => {
+    const result = await collectSiteDraft(deps({
+      readSnapshot: async () => ({
+        ...nexusSnapshot(),
+        meta: [],
+        domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
+      }),
+    }));
+
+    expect(result).toMatchObject({ state: 'unsupported', detection: { id: 'gazelle', supported: false } });
+    expect('draft' in result).toBe(false);
+  });
+
+  it('returns unsupported details for an unrecognized architecture', async () => {
     const result = await collectSiteDraft(deps({
       readSnapshot: async () => ({ ...nexusSnapshot(), meta: [], links: [], textSample: '' }),
     }));
-    expect(result.state).toBe('ready');
-    if (result.state !== 'ready') throw new Error('expected editable result');
-    expect(result.draft).toMatchObject({ architecture: 'unknown', scheme: null, cookie: 'session=secret' });
+    expect(result).toMatchObject({ state: 'unsupported', detection: { id: 'unknown', supported: false } });
+    expect('draft' in result).toBe(false);
   });
 
   it('identifies page-probe failures without exposing the underlying error', async () => {

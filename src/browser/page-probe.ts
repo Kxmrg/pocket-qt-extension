@@ -31,6 +31,16 @@ export function collectPageSnapshot(): PageSnapshot {
     })
     .slice(0, maxLinks);
 
+  const domMarkers = [
+    document.querySelector('body#torrents') && 'body#torrents',
+    document.querySelector('#torrent_table.torrent_table.grouping') && 'gazelle-grouping-table',
+    document.querySelector('.group') && 'gazelle-group-row',
+    document.querySelector('.edition') && 'gazelle-edition-row',
+    document.querySelector('.group_torrent') && 'gazelle-torrent-row',
+    document.querySelector('.TorrentCover, .TorrentCover-item') && 'gazellepw-cover-wall',
+    document.querySelector('[name="resolution"], [name="codec"], [name="container"]') && 'gazellepw-movie-filters',
+  ].filter((value): value is string => Boolean(value));
+
   const storage: PageSnapshot['storage'] = [];
   const readStorage = (area: 'local' | 'session', store: Storage) => {
     try {
@@ -101,6 +111,7 @@ export function collectPageSnapshot(): PageSnapshot {
     meta,
     resources,
     links,
+    domMarkers,
     textSample: limit((document.body?.textContent ?? '').replace(/\s+/g, ' ').trim(), maxText),
     storage,
     candidates,
