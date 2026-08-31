@@ -11,6 +11,7 @@ const expectedScheme: Record<string, number> = {
   mtorrent: 2,
   haidan: 3,
   sunnypt: 4,
+  gazelle: 5,
 };
 
 function isHttpAddress(value: string): boolean {

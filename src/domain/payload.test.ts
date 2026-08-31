@@ -74,6 +74,13 @@ describe('Pocket Qt import payload', () => {
     expect(payload.site.passkey).toBeNull();
   });
 
+  it('encodes Gazelle in QR protocol version 1 without a token', () => {
+    const encoded = buildImportPayload(draft({
+      architecture: 'gazelle', scheme: 5, address: 'https://dicmusic.com',
+    }));
+    expect(encoded).toMatchObject({ version: 1, site: { scheme: 5, token: null } });
+  });
+
   it('round trips the versioned raw-deflate Base64URL payload', () => {
     const encoded = encodeImportPayload(draft());
     expect(encoded.text.startsWith('pocket-pt://import/site?v=1&data=')).toBe(true);

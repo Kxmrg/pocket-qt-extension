@@ -82,6 +82,13 @@ describe('adaptSite', () => {
     ]);
   });
 
+  it('maps Gazelle to scheme 5 without a token', () => {
+    const gazelle = adaptSite(input('gazelle', 'https://dicmusic.com/torrents.php', {
+      title: '浏览种子 :: DIC Music',
+    }));
+    expect(gazelle).toMatchObject({ architecture: 'gazelle', scheme: 5, token: null });
+  });
+
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
     expect(draft.fieldWarnings).toMatchObject({ cookie: '未自动获取 UUID', token: '请前往控制台实验室复制令牌并手动填写' });

@@ -4,7 +4,7 @@ import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
 
 export interface SiteDraft {
   architecture: ArchitectureId;
-  scheme: 0 | 1 | 2 | 3 | 4 | null;
+  scheme: 0 | 1 | 2 | 3 | 4 | 5 | null;
   name: string;
   address: string;
   cookie: string;
@@ -27,12 +27,13 @@ export interface AdaptSiteInput {
   cookieHeader: string;
 }
 
-const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4>> = {
+const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5>> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
   haidan: 3,
   sunnypt: 4,
+  gazelle: 5,
 };
 
 function siteName(snapshot: PageSnapshot): string {

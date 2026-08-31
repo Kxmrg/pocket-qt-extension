@@ -65,4 +65,11 @@ describe('validateDraft', () => {
     }));
     expect(result).toEqual({ valid: true, errors: {} });
   });
+
+  it('accepts Gazelle with scheme 5 and Cookie without a token', () => {
+    const result = validateDraft(validDraft({
+      architecture: 'gazelle', scheme: 5, address: 'https://dicmusic.com', token: null,
+    }));
+    expect(result).toEqual({ valid: true, errors: {} });
+  });
 });
