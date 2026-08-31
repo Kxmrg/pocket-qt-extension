@@ -11,6 +11,8 @@
 
 Gazelle 和 UNIT3D 可被识别，但 Pocket Qt 暂不支持导入，后续可能会提供支持。
 
+![Pocket Qt 站点导入插件界面预览](docs/images/pocket-qt-extension-preview.png)
+
 ## 开发
 
 需要 Node.js 24 或兼容版本。
