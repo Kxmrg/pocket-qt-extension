@@ -72,7 +72,7 @@ function extensionVersion(): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) {
     return chrome.runtime.getManifest().version;
   }
-  return '0.5.0';
+  return '0.6.0';
 }
 
 function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
