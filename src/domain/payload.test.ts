@@ -16,6 +16,7 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
     ],
     passkey: null,
     userAgent: 'Test UA',
+    importUserAgent: true,
     tags: null,
     downloadTags: null,
     widget: 1,
@@ -48,6 +49,14 @@ const expected = {
   },
 };
 
+function randomCookie(length: number): string {
+  let state = 0x12345678;
+  return Array.from({ length }, () => {
+    state = (state * 1_664_525 + 1_013_904_223) >>> 0;
+    return String.fromCharCode(33 + (state % 90));
+  }).join('');
+}
+
 describe('Pocket Qt import payload', () => {
   it('maps only Flutter SiteConfig fields and selected pages', () => {
     expect(buildImportPayload(draft())).toEqual(expected);
@@ -74,11 +83,16 @@ describe('Pocket Qt import payload', () => {
     expect(payload.site.passkey).toBeNull();
   });
 
-  it('encodes Gazelle in QR protocol version 1 without a token', () => {
+  it('encodes Gazelle without a token or passkey', () => {
     const encoded = buildImportPayload(draft({
       architecture: 'gazelle', scheme: 5, address: 'https://dicmusic.com',
+      token: 'unused-token', passkey: 'unused-passkey',
     }));
-    expect(encoded).toMatchObject({ version: 1, site: { scheme: 5, token: null } });
+    expect(encoded).toMatchObject({ version: 1, site: { scheme: 5, token: null, passkey: null } });
+  });
+
+  it('omits User-Agent when its import switch is off', () => {
+    expect(buildImportPayload(draft({ importUserAgent: false })).site.userAgent).toBeNull();
   });
 
   it('round trips the versioned raw-deflate Base64URL payload', () => {
@@ -93,13 +107,12 @@ describe('Pocket Qt import payload', () => {
     expect(encoded.sourceBytes).toBeGreaterThan(encoded.compressedBytes);
   });
 
+  it('encodes data that fits QR low error correction but exceeds medium capacity', () => {
+    expect(() => encodeImportPayload(draft({ cookie: randomCookie(2_100) }))).not.toThrow();
+  });
+
   it('rejects data that cannot fit a single QR code', () => {
-    let state = 0x12345678;
-    const randomCookie = Array.from({ length: 8_000 }, () => {
-      state = (state * 1_664_525 + 1_013_904_223) >>> 0;
-      return String.fromCharCode(33 + (state % 90));
-    }).join('');
-    expect(() => encodeImportPayload(draft({ cookie: randomCookie })))
+    expect(() => encodeImportPayload(draft({ cookie: randomCookie(8_000) })))
       .toThrow('二维码数据过大，请减少种子页面后重试');
   });
 });

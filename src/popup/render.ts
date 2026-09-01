@@ -25,6 +25,7 @@ export interface PopupActions {
   onPageAddCurrent: () => void;
   onPageAddManual: () => void;
   onGenerate: () => void;
+  onFullscreen: () => void;
   onBack: () => void;
 }
 
@@ -147,10 +148,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
   const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? '令牌' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
   const cookieLabel = draft.architecture === 'mtorrent' ? 'UUID' : 'Cookie';
-  const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt'
+  const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent' || draft.architecture === 'sunnypt'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle'
     ? ''
     : credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;
@@ -162,7 +163,8 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
         <div class="field-grid">${architectureSelect(draft, errors)}
         ${regularField('site-name', '站点名称', draft.name, 'name', { error: errors.name })}
         ${regularField('site-address', '站点地址', draft.address, 'address', { error: errors.address })}
-        ${regularField('user-agent', 'User-Agent', draft.userAgent ?? '', 'userAgent', { error: errors.userAgent })}</div>
+        ${regularField('user-agent', 'User-Agent', draft.userAgent ?? '', 'userAgent', { error: errors.userAgent })}
+        <div class="check-field ua-import-toggle"><input id="import-user-agent" data-field="importUserAgent" type="checkbox" ${draft.importUserAgent ? 'checked' : ''}><label for="import-user-agent">导入 User-Agent</label></div></div>
       </section>
       <section class="panel form-section sensitive-panel"><div class="section-heading"><h2>登录信息</h2>${icon('lock')}</div>
         ${credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state)}
@@ -231,7 +233,7 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   } else if (state.kind === 'error') {
     root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {
-    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div><dl class="qr-site-info" data-qr-site-info><div><dt>架构</dt><dd>${escapeHtml(architectureNames[state.draft.architecture])}</dd></div><div><dt>站点名称</dt><dd>${escapeHtml(state.draft.name)}</dd></div><div><dt>地址</dt><dd title="${escapeHtml(state.draft.address)}">${escapeHtml(state.draft.address)}</dd></div></dl></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><div class="qr-actions"><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
+    root.innerHTML = `<div class="shell qr-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}<section class="qr-card"><div class="qr-frame"><canvas id="qr-canvas" aria-label="Pocket Qt 站点导入二维码"></canvas></div><dl class="qr-site-info" data-qr-site-info><div><dt>架构</dt><dd>${escapeHtml(architectureNames[state.draft.architecture])}</dd></div><div><dt>站点名称</dt><dd>${escapeHtml(state.draft.name)}</dd></div><div><dt>地址</dt><dd title="${escapeHtml(state.draft.address)}">${escapeHtml(state.draft.address)}</dd></div></dl></section><aside class="danger-note">${icon('shield')}<p>二维码包含当前站点登录凭据，请勿截图或分享。</p></aside><aside class="scan-note" role="note">如果扫码失败，请拖拽放大二维码或全屏显示。</aside><div class="qr-actions"><button class="primary" type="button" data-action="fullscreen">全屏显示</button><button class="secondary" type="button" data-action="back">返回修改</button></div></div>`;
   }
 }
 
@@ -242,6 +244,7 @@ export function renderPopup(root: HTMLElement, state: PopupState, actions: Popup
   root.querySelector<HTMLElement>('[data-action="permission"]')?.addEventListener('click', actions.onRequestPermission);
   root.querySelector<HTMLElement>('[data-action="retry"]')?.addEventListener('click', actions.onRetry);
   root.querySelector<HTMLElement>('[data-action="generate"]')?.addEventListener('click', actions.onGenerate);
+  root.querySelector<HTMLElement>('[data-action="fullscreen"]')?.addEventListener('click', actions.onFullscreen);
   root.querySelector<HTMLElement>('[data-action="back"]')?.addEventListener('click', actions.onBack);
   root.querySelector<HTMLElement>('[data-action="add-current-page"]')?.addEventListener('click', actions.onPageAddCurrent);
   root.querySelector<HTMLElement>('[data-action="add-manual-page"]')?.addEventListener('click', actions.onPageAddManual);

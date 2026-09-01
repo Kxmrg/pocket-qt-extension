@@ -1,7 +1,7 @@
 import QRCode from 'qrcode';
 import { collectSiteDraft } from '../application/collect-site';
 import type { SiteDraft } from '../domain/adapt-site';
-import { encodeImportPayload } from '../domain/payload';
+import { encodeImportPayload, QR_ERROR_CORRECTION_LEVEL } from '../domain/payload';
 import { createManualPage, draftPageFromSnapshot } from '../domain/torrent-pages';
 import type { ArchitectureId } from '../domain/types';
 import { validateDraft } from '../domain/validate-draft';
@@ -12,6 +12,7 @@ import {
   requestCurrentOrigin,
   type ActivePageContext,
 } from '../browser/chrome-gateway';
+import { openFullscreenQr } from '../browser/fullscreen-qr';
 import { popupStateFromCollection, renderPopup, type PopupActions, type PopupState } from './render';
 import './styles.css';
 
@@ -41,7 +42,7 @@ async function drawQr(): Promise<void> {
   await QRCode.toCanvas(canvas, state.payload.text, {
     width: 720,
     margin: 0,
-    errorCorrectionLevel: 'M',
+    errorCorrectionLevel: QR_ERROR_CORRECTION_LEVEL,
     color: { dark: '#102a2b', light: '#fffdf6' },
   });
 }
@@ -99,7 +100,8 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || architecture === 'sunnypt' ? null : draft.token,
+        token: architecture === 'nexusphp' || architecture === 'sunnypt' || architecture === 'gazelle' ? null : draft.token,
+        passkey: architecture === 'sunnypt' || architecture === 'gazelle' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
       };
@@ -114,6 +116,7 @@ const actions: PopupActions = {
         case 'token': return { ...draft, token: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, token: '' } };
         case 'passkey': return { ...draft, passkey: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, passkey: '' } };
         case 'userAgent': return { ...draft, userAgent: String(value) || null };
+        case 'importUserAgent': return { ...draft, importUserAgent: Boolean(value) };
         case 'tags': return { ...draft, tags: String(value) || null };
         case 'downloadTags': return { ...draft, downloadTags: String(value) || null };
         case 'widget': return { ...draft, widget: Number(value) };
@@ -165,6 +168,10 @@ const actions: PopupActions = {
     } catch (error) {
       paint({ ...ready, errors: { payload: error instanceof Error ? error.message : '二维码生成失败' } });
     }
+  },
+  onFullscreen: () => {
+    if (state.kind !== 'qr') return;
+    void openFullscreenQr({ text: state.payload.text, siteName: state.draft.name });
   },
   onBack: () => {
     if (state.kind === 'qr') paint(readyState(state.draft));

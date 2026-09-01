@@ -30,6 +30,8 @@ export interface EncodedPayload {
   sourceBytes: number;
 }
 
+export const QR_ERROR_CORRECTION_LEVEL = 'L' as const;
+
 export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
   if (draft.scheme === null) throw new Error('请选择 Pocket Qt 支持的站点架构');
   return {
@@ -43,8 +45,8 @@ export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
       pages: draft.pages
         .filter((page) => page.selected)
         .map(({ name, path, tags }) => ({ name, path, tags })),
-      passkey: draft.scheme === 4 ? null : draft.passkey,
-      userAgent: draft.userAgent,
+      passkey: draft.scheme === 4 || draft.scheme === 5 ? null : draft.passkey,
+      userAgent: draft.importUserAgent ? draft.userAgent : null,
       tags: draft.tags,
       downloadTags: draft.downloadTags,
       widget: draft.widget,
@@ -69,7 +71,7 @@ function toBase64Url(bytes: Uint8Array): string {
 
 export function assertQrCapacity(text: string): void {
   try {
-    QRCode.create(text, { errorCorrectionLevel: 'M' });
+    QRCode.create(text, { errorCorrectionLevel: QR_ERROR_CORRECTION_LEVEL });
   } catch {
     throw new Error('二维码数据过大，请减少种子页面后重试');
   }

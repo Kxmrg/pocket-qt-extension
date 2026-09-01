@@ -119,6 +119,20 @@ describe('detectArchitecture', () => {
     expect(result.id).toBe('nexusphp');
   });
 
+  it('recognizes the TTG NexusPHP route variant', () => {
+    const result = detectArchitecture(snapshot('https://totheglory.im/browse.php?c=M', {
+      title: 'TTG',
+      links: [
+        { text: '影视&音乐', href: 'https://totheglory.im/browse.php?c=M' },
+        { text: '种子详情', href: 'https://totheglory.im/details.php?id=830851&hit=1' },
+        { text: '下载', href: 'https://totheglory.im/dl/830851/3780' },
+        { text: '用户', href: 'https://totheglory.im/userdetails.php?id=62254' },
+      ],
+    }));
+
+    expect(result).toMatchObject({ id: 'nexusphp', supported: true, confidence: 'likely' });
+  });
+
   it('keeps a normal page with one torrent-like link unknown', () => {
     const result = detectArchitecture(snapshot('https://news.example/', {
       links: [{ text: 'Torrents in the news', href: 'https://news.example/torrents' }],

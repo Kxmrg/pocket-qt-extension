@@ -11,7 +11,7 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
       { name: '综合', path: '/torrents.php', tags: null, selected: true },
       { name: '电影', path: '/torrents.php?cat=401', tags: null, selected: true },
     ],
-    passkey: null, userAgent: 'Browser UA', tags: null, downloadTags: null,
+    passkey: null, userAgent: 'Browser UA', importUserAgent: true, tags: null, downloadTags: null,
     widget: 1, token: null, search: true, top: null, fieldWarnings: {}, alternatives: {},
     ...overrides,
   };
@@ -22,7 +22,7 @@ function actions(): PopupActions {
     onRead: vi.fn(), onRefresh: vi.fn(), onRequestPermission: vi.fn(), onRetry: vi.fn(), onArchitectureChange: vi.fn(),
     onFieldChange: vi.fn(), onToggleCredential: vi.fn(),
     onPageChange: vi.fn(), onPageRemove: vi.fn(), onPageAddCurrent: vi.fn(), onPageAddManual: vi.fn(),
-    onGenerate: vi.fn(), onBack: vi.fn(),
+    onGenerate: vi.fn(), onFullscreen: vi.fn(), onBack: vi.fn(),
   };
 }
 
@@ -151,6 +151,30 @@ describe('renderPopup', () => {
     expect(root.querySelector('#passkey')).not.toBeNull();
   });
 
+  it('hides Token and Passkey for Gazelle', () => {
+    renderPopup(root, {
+      kind: 'ready',
+      draft: draft({ architecture: 'gazelle', scheme: 5, token: 'unused', passkey: 'unused' }),
+      errors: {}, revealed: new Set(),
+    }, actions());
+
+    expect(root.querySelector('#token')).toBeNull();
+    expect(root.querySelector('#passkey')).toBeNull();
+  });
+
+  it('shows an enabled User-Agent import switch directly below User-Agent', () => {
+    const handlers = actions();
+    renderPopup(root, { kind: 'ready', draft: draft(), errors: {}, revealed: new Set() }, handlers);
+
+    const input = root.querySelector<HTMLInputElement>('#user-agent');
+    const toggle = root.querySelector<HTMLInputElement>('#import-user-agent');
+    expect(toggle?.checked).toBe(true);
+    expect(input?.closest('.field')?.nextElementSibling?.contains(toggle ?? null)).toBe(true);
+
+    toggle?.click();
+    expect(handlers.onFieldChange).toHaveBeenCalledWith('importUserAgent', false);
+  });
+
   it('shows SunnyPt as supported and hides token and passkey inputs', () => {
     renderPopup(root, {
       kind: 'ready',
@@ -234,7 +258,7 @@ describe('renderPopup', () => {
     expect(root.querySelector<HTMLDetailsElement>('details.advanced')?.open).toBe(true);
   });
 
-  it('renders a single responsive QR card without metadata or enlargement controls', () => {
+  it('offers full-browser QR display above the back action and shows scan guidance', () => {
     const handlers = actions();
     renderPopup(root, {
       kind: 'qr', draft: draft(), payload: { text: 'pocket-pt://import/site?v=1&data=x', sourceBytes: 320, compressedBytes: 180 },
@@ -253,9 +277,15 @@ describe('renderPopup', () => {
     expect(siteInfo?.textContent).toContain('https://pt.example');
     expect(root.textContent).not.toContain('180 B');
     expect(root.textContent).toContain('二维码包含当前站点登录凭据');
+    expect(root.textContent).toContain('如果扫码失败，请拖拽放大二维码或全屏显示');
+    const fullscreen = root.querySelector<HTMLButtonElement>('[data-action="fullscreen"]');
+    const back = root.querySelector<HTMLButtonElement>('[data-action="back"]');
+    expect(fullscreen?.textContent).toContain('全屏显示');
+    expect([...root.querySelectorAll('.qr-actions button')]).toEqual([fullscreen, back]);
+    fullscreen?.click();
+    expect(handlers.onFullscreen).toHaveBeenCalledOnce();
     expect(root.textContent).toContain('返回修改');
-    expect(root.textContent).not.toContain('放大二维码');
-    expect(root.querySelectorAll('.qr-actions button')).toHaveLength(1);
+    expect(root.querySelectorAll('.qr-actions button')).toHaveLength(2);
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
     expect(handlers.onRefresh).toHaveBeenCalledOnce();
   });

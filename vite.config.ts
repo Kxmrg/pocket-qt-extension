@@ -10,6 +10,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: 'popup.html',
+        fullscreen: 'fullscreen.html',
         background: 'src/background.ts',
       },
       output: {

@@ -165,12 +165,23 @@ describe('collectSiteDraft', () => {
     expect('draft' in result).toBe(false);
   });
 
-  it('returns unsupported details for an unrecognized architecture', async () => {
+  it('keeps an unrecognized site editable with the collected page data', async () => {
     const result = await collectSiteDraft(deps({
       readSnapshot: async () => ({ ...nexusSnapshot(), meta: [], links: [], textSample: '' }),
     }));
-    expect(result).toMatchObject({ state: 'unsupported', detection: { id: 'unknown', supported: false } });
-    expect('draft' in result).toBe(false);
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected editable ready result');
+    expect(result.detection).toMatchObject({ id: 'unknown', supported: false });
+    expect(result.draft).toMatchObject({
+      architecture: 'unknown',
+      scheme: null,
+      name: 'Fixture PT',
+      address: 'https://pt.example',
+      cookie: 'session=secret',
+      userAgent: 'Browser UA',
+      pages: [{ name: '综合', path: '/torrents.php', selected: true }],
+    });
   });
 
   it('identifies page-probe failures without exposing the underlying error', async () => {

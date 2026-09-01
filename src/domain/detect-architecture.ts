@@ -85,17 +85,19 @@ function scoreNexusPhp(snapshot: PageSnapshot): ScoreResult {
   const links = hrefs(snapshot);
   const explicit = /(?:powered by\s+)?nexusphp/.test(haystack);
   const signals = [
-    links.some((href) => /\/torrents\.php(?:[?#]|$)/.test(href)),
-    links.some((href) => /\/download\.php\?[^#]*\bid=/.test(href)),
+    links.some((href) => /\/(?:torrents|browse)\.php(?:[?#]|$)/.test(href)),
+    links.some((href) => /\/download\.php\?[^#]*\bid=|\/dl\/\d+\/\d+(?:[/?#]|$)/.test(href)),
+    links.some((href) => /\/details\.php\?[^#]*\bid=/.test(href)),
     links.some((href) => /\/userdetails\.php\?[^#]*\bid=/.test(href)),
     /nexusphp|\/styles\/.*nexus/.test(haystack),
   ];
   const reasons = [
     ...(explicit ? ['检测到 NexusPHP 标识'] : []),
-    ...(signals[0] ? ['检测到 torrents.php'] : []),
-    ...(signals[1] ? ['检测到 download.php'] : []),
-    ...(signals[2] ? ['检测到 userdetails.php'] : []),
-    ...(!explicit && signals[3] ? ['检测到 NexusPHP 资源'] : []),
+    ...(signals[0] ? ['检测到 NexusPHP 种子列表路由'] : []),
+    ...(signals[1] ? ['检测到 NexusPHP 下载路由'] : []),
+    ...(signals[2] ? ['检测到 details.php'] : []),
+    ...(signals[3] ? ['检测到 userdetails.php'] : []),
+    ...(!explicit && signals[4] ? ['检测到 NexusPHP 资源'] : []),
   ];
   return { id: 'nexusphp', score: (explicit ? 10 : 0) + signals.filter(Boolean).length, explicit, reasons, supported: true };
 }

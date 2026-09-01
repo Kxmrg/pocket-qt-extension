@@ -39,7 +39,7 @@ describe('side panel manifest', () => {
   it('uses persistent tab and host permissions required by the side panel Cookie flow', () => {
     const manifest = JSON.parse(readFileSync('public/manifest.json', 'utf8')) as ExtensionManifest;
 
-    expect(manifest.permissions).toEqual(expect.arrayContaining(['tabs', 'cookies', 'scripting', 'sidePanel']));
+    expect(manifest.permissions).toEqual(expect.arrayContaining(['tabs', 'cookies', 'scripting', 'sidePanel', 'storage']));
     expect(manifest.permissions).not.toContain('activeTab');
     expect(manifest.host_permissions).toEqual(['http://*/*', 'https://*/*']);
     expect(manifest.optional_host_permissions).toBeUndefined();

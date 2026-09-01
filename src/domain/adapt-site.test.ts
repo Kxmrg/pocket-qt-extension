@@ -86,7 +86,9 @@ describe('adaptSite', () => {
     const gazelle = adaptSite(input('gazelle', 'https://dicmusic.com/torrents.php', {
       title: '浏览种子 :: DIC Music',
     }));
-    expect(gazelle).toMatchObject({ architecture: 'gazelle', scheme: 5, name: 'DIC Music', token: null });
+    expect(gazelle).toMatchObject({
+      architecture: 'gazelle', scheme: 5, name: 'DIC Music', token: null, passkey: null, importUserAgent: true,
+    });
     expect(gazelle.pages).toEqual([
       { name: '种子', path: '/torrents.php', tags: null, selected: true },
       { name: '合集', path: '/collages.php', tags: null, selected: true },

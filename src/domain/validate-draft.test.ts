@@ -12,6 +12,7 @@ function validDraft(overrides: Partial<SiteDraft> = {}): SiteDraft {
     pages: [{ name: '综合', path: '/torrents.php', tags: null, selected: true }],
     passkey: null,
     userAgent: 'Test UA',
+    importUserAgent: true,
     tags: null,
     downloadTags: null,
     widget: 1,

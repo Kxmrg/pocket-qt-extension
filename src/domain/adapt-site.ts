@@ -11,6 +11,7 @@ export interface SiteDraft {
   pages: DraftPage[];
   passkey: string | null;
   userAgent: string | null;
+  importUserAgent: boolean;
   tags: string | null;
   downloadTags: string | null;
   widget: number;
@@ -107,8 +108,9 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     address: siteAddress(detection.id, snapshot),
     cookie,
     pages: extractTorrentPages(detection.id, snapshot),
-    passkey: detection.id === 'sunnypt' ? null : passkey.value || null,
+    passkey: detection.id === 'sunnypt' || detection.id === 'gazelle' ? null : passkey.value || null,
     userAgent: snapshot.userAgent || null,
+    importUserAgent: true,
     tags: null,
     downloadTags: null,
     widget: 1,
