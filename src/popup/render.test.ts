@@ -61,10 +61,16 @@ describe('renderPopup', () => {
 
     const project = root.querySelector<HTMLAnchorElement>('a[data-home-link="project"]');
     const license = root.querySelector<HTMLAnchorElement>('a[data-home-link="license"]');
+    const update = root.querySelector<HTMLAnchorElement>('a[data-home-link="update"]');
     expect(project?.href).toBe('https://kxmrg.com/');
     expect(license?.href).toBe('https://pocket.kxmrg.com/user/licenses');
+    expect(update?.href).toBe('https://github.com/Kxmrg/pocket-qt-extension');
     expect(project?.target).toBe('_blank');
     expect(license?.target).toBe('_blank');
+    expect(update?.target).toBe('_blank');
+    expect([...root.querySelectorAll('[data-home-link]')].map((link) => link.textContent?.trim())).toEqual([
+      '插件更新', '项目地址', '授权管理',
+    ]);
 
     const children = [...(root.querySelector('.home-shell')?.children ?? [])];
     expect(children.map((element) => element.getAttribute('data-home-section'))).toEqual([
@@ -81,10 +87,14 @@ describe('renderPopup', () => {
     expect(root.querySelector('.app-brand')?.textContent).toContain('v0.5.0');
   });
 
-  it.each(['gazelle', 'unit3d'] as const)('shows %s as unsupported without a generate action', (id) => {
+  it('shows UNIT3D as unsupported without a generate action', () => {
+    const id = 'unit3d';
     const detection: DetectionResult = { id, supported: false, confidence: 'certain', reasons: [`检测到 ${id}`] };
     renderPopup(root, { kind: 'unsupported', detection }, actions());
     expect(root.textContent?.toLowerCase()).toContain(id);
+    expect(root.textContent).toContain('暂不支持');
+    expect(root.textContent).not.toContain('检测到');
+    expect(root.querySelector('.reason-list')).toBeNull();
     expect([...root.querySelectorAll('button')].some((button) => button.textContent?.includes('生成二维码'))).toBe(false);
   });
 

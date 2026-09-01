@@ -42,6 +42,7 @@ const architectureNames: Record<ArchitectureId, string> = {
 
 const PROJECT_URL = 'https://kxmrg.com/';
 const LICENSE_URL = 'https://pocket.kxmrg.com/user/licenses';
+const UPDATE_URL = 'https://github.com/Kxmrg/pocket-qt-extension';
 const PLUGIN_NAME = 'Pocket Qt 站点导入插件';
 
 function escapeHtml(value: unknown): string {
@@ -201,6 +202,7 @@ function homeView(): string {
       <p>站点导入插件 <strong>v${escapeHtml(extensionVersion())}</strong></p>
     </section>
     <nav class="resource-links" data-home-section="links" aria-label="项目相关链接">
+      <a data-home-link="update" href="${UPDATE_URL}" target="_blank" rel="noreferrer">插件更新${icon('external')}</a>
       <a data-home-link="project" href="${PROJECT_URL}" target="_blank" rel="noreferrer">项目地址${icon('external')}</a>
       <a data-home-link="license" href="${LICENSE_URL}" target="_blank" rel="noreferrer">授权管理${icon('external')}</a>
     </nav>
@@ -229,7 +231,7 @@ function renderStatic(root: HTMLElement, state: Exclude<PopupState, { kind: 'rea
   } else if (state.kind === 'permission') {
     root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon">${icon('lock')}</span><h1>需要站点权限</h1><p>${escapeHtml(state.origin)}</p><button class="primary" type="button" data-action="permission">允许读取本站${icon('arrow')}</button></section></div>`;
   } else if (state.kind === 'unsupported') {
-    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-muted">${architectureNames[state.detection.id].slice(0, 1)}</span><span class="status-badge">暂不支持</span><h1>${architectureNames[state.detection.id]}</h1><ul class="reason-list">${state.detection.reasons.map((reason) => `<li>${escapeHtml(reason)}</li>`).join('')}</ul><button class="secondary" type="button" data-action="retry">重新识别</button></section></div>`;
+    root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-muted">${architectureNames[state.detection.id].slice(0, 1)}</span><span class="status-badge">暂不支持</span><h1>${architectureNames[state.detection.id]}</h1><button class="secondary" type="button" data-action="retry">重新识别</button></section></div>`;
   } else if (state.kind === 'error') {
     root.innerHTML = `<div class="shell state-shell">${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}` })}<section class="state-card"><span class="state-icon state-icon-error">!</span><h1>未能读取站点</h1><button class="primary" type="button" data-action="retry">重试</button></section></div>`;
   } else {

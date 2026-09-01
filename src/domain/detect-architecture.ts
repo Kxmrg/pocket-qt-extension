@@ -76,7 +76,7 @@ function scoreGazelle(snapshot: PageSnapshot): ScoreResult {
     score,
     explicit,
     reasons,
-    supported: !hasGazellePwSignature && (hasClassicStructure || explicit),
+    supported: hasGazellePwSignature || hasClassicStructure || explicit,
   };
 }
 
@@ -122,6 +122,8 @@ export function detectArchitecture(snapshot: PageSnapshot): DetectionResult {
   }
   if (isHost(snapshot.host, 'haidan.cc')) return fixed('haidan', '固定域名：haidan.cc');
   if (isHost(snapshot.host, 'sunnypt.top')) return fixed('sunnypt', '固定域名：sunnypt.top');
+  if (isHost(snapshot.host, 'dicmusic.com')) return fixed('gazelle', '固定域名：dicmusic.com');
+  if (isHost(snapshot.host, 'greatposterwall.com')) return fixed('gazelle', '固定域名：greatposterwall.com');
 
   const gazelle = scoreGazelle(snapshot);
   if (gazelle.score >= 4) return detectionFromScore(gazelle);

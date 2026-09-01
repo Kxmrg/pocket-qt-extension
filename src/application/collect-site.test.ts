@@ -152,17 +152,26 @@ describe('collectSiteDraft', () => {
     ]);
   });
 
-  it('keeps GazellePW unsupported', async () => {
+  it('keeps GazellePW editable as a supported Gazelle site', async () => {
     const result = await collectSiteDraft(deps({
+      getContext: async () => ({
+        url: 'https://greatposterwall.com/torrents.php', origin: 'https://greatposterwall.com', hasPermission: true,
+      }),
       readSnapshot: async () => ({
         ...nexusSnapshot(),
+        url: 'https://greatposterwall.com/torrents.php',
+        origin: 'https://greatposterwall.com',
+        host: 'greatposterwall.com',
+        title: '电影 :: Great Poster Wall',
         meta: [],
         domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
       }),
     }));
 
-    expect(result).toMatchObject({ state: 'unsupported', detection: { id: 'gazelle', supported: false } });
-    expect('draft' in result).toBe(false);
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.detection).toMatchObject({ id: 'gazelle', supported: true });
+    expect(result.draft).toMatchObject({ architecture: 'gazelle', scheme: 5, name: 'Great Poster Wall' });
   });
 
   it('keeps an unrecognized site editable with the collected page data', async () => {

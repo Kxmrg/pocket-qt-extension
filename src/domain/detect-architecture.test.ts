@@ -26,8 +26,10 @@ describe('detectArchitecture', () => {
     ['https://kp.m-team.cc/browse', 'mtorrent'],
     ['https://zp.m-team.io/browse', 'mtorrent'],
     ['https://haidan.cc/torrents.php', 'haidan'],
+    ['https://dicmusic.com/collages.php', 'gazelle'],
+    ['https://greatposterwall.com/torrents.php', 'gazelle'],
   ] as const)('recognizes fixed site %s as %s', (url, expected) => {
-    expect(detectArchitecture(snapshot(url)).id).toBe(expected);
+    expect(detectArchitecture(snapshot(url))).toMatchObject({ id: expected, supported: true });
   });
 
   it('recognizes UNIT3D before a coincidental NexusPHP route', () => {
@@ -53,12 +55,12 @@ describe('detectArchitecture', () => {
     expect(result).toMatchObject({ id: 'gazelle', supported: true, confidence: 'likely' });
   });
 
-  it('keeps GazellePW poster-wall pages unsupported in Phase 1', () => {
+  it('supports GazellePW poster-wall pages as Gazelle', () => {
     const result = detectArchitecture(snapshot('https://greatposterwall.com/torrents.php', {
       domMarkers: ['body#torrents', 'gazellepw-cover-wall', 'gazellepw-movie-filters'],
     }));
 
-    expect(result).toMatchObject({ id: 'gazelle', supported: false });
+    expect(result).toMatchObject({ id: 'gazelle', supported: true });
   });
 
   it('does not identify a page as GazellePW from movie filters alone', () => {
