@@ -95,6 +95,34 @@ describe('adaptSite', () => {
     ]);
   });
 
+  it('maps UNIT3D to scheme 6 with Cookie and the current torrents query', () => {
+    const unit3d = adaptSite(input('unit3d', 'https://blutopia.cc/torrents?category=movie', {
+      title: '资源 - Blutopia',
+    }));
+
+    expect(unit3d).toMatchObject({
+      architecture: 'unit3d', scheme: 6, name: 'Blutopia',
+      cookie: 'session=secret', token: null, passkey: null, importUserAgent: true,
+    });
+    expect(unit3d.pages).toEqual([
+      { name: '综合', path: '/torrents?category=movie', tags: null, selected: true },
+    ]);
+  });
+
+  it.each([
+    ['https://exoticaz.to/', 'ExoticaZ', '/torrents'],
+    ['https://filelist.io/', 'FileList', '/browse.php'],
+    ['https://beyond-hd.me/', 'BeyondHD', '/torrents'],
+    ['https://hdbits.org/', 'HDBits', '/browse.php'],
+  ] as const)('maps Private site %s to scheme 7 and its canonical page', (url, name, path) => {
+    const draft = adaptSite(input('private', url, { title: `${name} - Home` }));
+    expect(draft).toMatchObject({
+      architecture: 'private', scheme: 7, name, cookie: 'session=secret',
+      token: null, passkey: null, importUserAgent: true,
+    });
+    expect(draft.pages).toEqual([{ name: '综合', path, tags: null, selected: true }]);
+  });
+
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
     expect(draft.fieldWarnings).toMatchObject({ cookie: '未自动获取 UUID', token: '请前往控制台实验室复制令牌并手动填写' });

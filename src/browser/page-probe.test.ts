@@ -91,9 +91,52 @@ describe('collectPageSnapshot', () => {
       'gazelle-edition-row',
       'gazelle-torrent-row',
     ]));
-    expect(result.domMarkers?.every((marker) => /^(body#torrents|gazelle-(grouping-table|group-row|edition-row|torrent-row)|gazellepw-(cover-wall|movie-filters))$/.test(marker))).toBe(true);
+    expect(result.domMarkers?.every((marker) => /^(body#torrents|gazelle-(grouping-table|group-row|edition-row|torrent-row)|gazellepw-(cover-wall|movie-filters)|ptp-(movie-routes|group-table)|btn-(series-links|torrent-actions)|unit3d-(torrent-table|torrent-row|footer))$/.test(marker))).toBe(true);
     expect(result.domMarkers).not.toContain('Album title that must not be collected');
     expect(result.domMarkers).not.toContain('input-value-that-must-not-be-collected');
+  });
+
+  it('collects PTP and BTN HTML-only Gazelle structure markers', () => {
+    document.body.innerHTML = `
+      <a href="/movies.php">Movies</a><a href="/collages.php">Collages</a>
+      <table class="torrent_table">
+        <tr><td><a href="/torrents.php?id=3139">Movie</a></td></tr>
+      </table>
+      <a href="/series.php?id=77">Series</a>
+      <table><tr><td>
+        <a href="/torrents.php?id=881">Torrent</a>
+        <a href="/torrents.php?action=download&id=881">Download</a>
+        <a href="/reports.php?action=report&type=torrent&id=881">Report</a>
+      </td></tr></table>
+    `;
+
+    expect(collectPageSnapshot().domMarkers).toEqual(expect.arrayContaining([
+      'ptp-movie-routes',
+      'ptp-group-table',
+      'btn-series-links',
+      'btn-torrent-actions',
+    ]));
+  });
+
+  it('collects semantic UNIT3D table, row, and footer markers', () => {
+    document.body.innerHTML = `
+      <table>
+        <thead><tr><th>Format</th><th>Name</th><th>Actions</th><th>Size</th><th>Seeders</th><th>Leechers</th><th>Completed</th></tr></thead>
+        <tbody><tr>
+          <td>1080p</td>
+          <td><a href="/torrents/the-film.123">The Film</a><a href="/users/uploader">uploader</a></td>
+          <td><a href="/torrents/download/123">Download</a></td>
+          <td>1 GiB</td><td>4</td><td>0</td><td>2</td>
+        </tr></tbody>
+      </table>
+      <footer><a href="https://github.com/HDInnovations/UNIT3D">UNIT3D-rs (core)</a><a href="https://github.com/HDInnovations/UNIT3D-Announce">UNIT3D-Announce</a></footer>
+    `;
+
+    expect(collectPageSnapshot().domMarkers).toEqual(expect.arrayContaining([
+      'unit3d-torrent-table',
+      'unit3d-torrent-row',
+      'unit3d-footer',
+    ]));
   });
 
   it('still collects the page when browser privacy rules block storage and document cookies', () => {

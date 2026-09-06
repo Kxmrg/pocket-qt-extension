@@ -91,6 +91,24 @@ describe('Pocket Qt import payload', () => {
     expect(encoded).toMatchObject({ version: 1, site: { scheme: 5, token: null, passkey: null } });
   });
 
+  it('encodes UNIT3D scheme 6 without API credentials', () => {
+    const encoded = buildImportPayload(draft({
+      architecture: 'unit3d', scheme: 6, address: 'https://unit3d.example',
+      pages: [{ name: '综合', path: '/torrents', tags: null, selected: true }],
+      token: 'unused-token', passkey: 'unused-passkey',
+    }));
+    expect(encoded.site).toMatchObject({ scheme: 6, token: null, passkey: null });
+  });
+
+  it('encodes Private scheme 7 without API credentials', () => {
+    const encoded = buildImportPayload(draft({
+      architecture: 'private', scheme: 7, address: 'https://hdbits.org',
+      pages: [{ name: '综合', path: '/browse.php', tags: null, selected: true }],
+      token: 'unused-token', passkey: 'unused-passkey',
+    }));
+    expect(encoded.site).toMatchObject({ scheme: 7, token: null, passkey: null });
+  });
+
   it('omits User-Agent when its import switch is off', () => {
     expect(buildImportPayload(draft({ importUserAgent: false })).site.userAgent).toBeNull();
   });

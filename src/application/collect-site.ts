@@ -45,7 +45,7 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
 
   try {
     const detection = detectArchitecture(snapshot);
-    if (detection.id === 'unit3d' || (!detection.supported && detection.id !== 'unknown')) {
+    if (!detection.supported && detection.id !== 'unknown') {
       return { state: 'unsupported', detection };
     }
     let cookies: CookieLike[] = [];

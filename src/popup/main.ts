@@ -23,12 +23,15 @@ const root: HTMLElement = rootElement;
 let state: PopupState = { kind: 'idle' };
 let activeContext: ActivePageContext | null = null;
 
-const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4> = {
+const schemeByArchitecture: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
   haidan: 3,
   sunnypt: 4,
+  gazelle: 5,
+  unit3d: 6,
+  private: 7,
 };
 
 function readyState(draft: SiteDraft, revealed = new Set<string>(), sourceOrigin = activeContext?.origin): PopupState {
@@ -100,8 +103,8 @@ const actions: PopupActions = {
         ...draft,
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
-        token: architecture === 'nexusphp' || architecture === 'sunnypt' || architecture === 'gazelle' ? null : draft.token,
-        passkey: architecture === 'sunnypt' || architecture === 'gazelle' ? null : draft.passkey,
+        token: architecture === 'nexusphp' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.token,
+        passkey: architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
       };

@@ -114,12 +114,46 @@ describe('collectSiteDraft', () => {
     expect(result.draft.fieldWarnings.token).toContain('控制台实验室');
   });
 
-  it('returns unsupported details without an encodable draft', async () => {
+  it('collects UNIT3D as a supported Cookie-authenticated draft', async () => {
     const result = await collectSiteDraft(deps({
-      readSnapshot: async () => ({ ...nexusSnapshot(), meta: [], textSample: 'Powered by UNIT3D' }),
+      getContext: async () => ({ url: 'https://blutopia.cc/torrents', origin: 'https://blutopia.cc', hasPermission: true }),
+      readSnapshot: async () => ({
+        ...nexusSnapshot(), url: 'https://blutopia.cc/torrents', origin: 'https://blutopia.cc', host: 'blutopia.cc',
+        title: '资源 - Blutopia', meta: [{ name: 'generator', property: '', content: 'UNIT3D' }],
+        links: [{ text: 'Torrents', href: 'https://blutopia.cc/torrents' }], textSample: '',
+      }),
+      readCookies: async () => [{ name: 'session', value: 'u3-secret', domain: 'blutopia.cc', path: '/', secure: true }],
     }));
-    expect(result).toMatchObject({ state: 'unsupported', detection: { id: 'unit3d', supported: false } });
-    expect('draft' in result).toBe(false);
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.detection).toMatchObject({ id: 'unit3d', supported: true });
+    expect(result.draft).toMatchObject({ architecture: 'unit3d', scheme: 6, name: 'Blutopia', cookie: 'session=u3-secret', token: null, passkey: null });
+    expect(result.draft.pages).toEqual([{ name: '综合', path: '/torrents', tags: null, selected: true }]);
+  });
+
+  it.each([
+    ['https://exoticaz.to/torrents', 'exoticaz.to', 'ExoticaZ', '/torrents'],
+    ['https://filelist.io/browse.php', 'filelist.io', 'FileList', '/browse.php'],
+    ['https://beyond-hd.me/torrents', 'beyond-hd.me', 'BeyondHD', '/torrents'],
+    ['https://hdbits.org/browse.php', 'hdbits.org', 'HDBits', '/browse.php'],
+  ])('collects %s as a Private Cookie-authenticated draft', async (url, host, name, path) => {
+    const origin = new URL(url).origin;
+    const result = await collectSiteDraft(deps({
+      getContext: async () => ({ url, origin, hasPermission: true }),
+      readSnapshot: async () => ({
+        ...nexusSnapshot(), url, origin, host, title: name, meta: [], links: [], textSample: '',
+      }),
+      readCookies: async () => [{ name: 'session', value: 'private-secret', domain: host, path: '/', secure: true }],
+    }));
+
+    expect(result.state).toBe('ready');
+    if (result.state !== 'ready') throw new Error('expected ready result');
+    expect(result.detection).toMatchObject({ id: 'private', supported: true, confidence: 'certain' });
+    expect(result.draft).toMatchObject({
+      architecture: 'private', scheme: 7, name, address: origin,
+      cookie: 'session=private-secret', token: null, passkey: null,
+    });
+    expect(result.draft.pages).toEqual([{ name: '综合', path, tags: null, selected: true }]);
   });
 
   it('collects a supported original Gazelle site through detection, adaptation, and page generation', async () => {

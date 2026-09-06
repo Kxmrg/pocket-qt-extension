@@ -73,4 +73,29 @@ describe('validateDraft', () => {
     }));
     expect(result).toEqual({ valid: true, errors: {} });
   });
+
+  it('accepts UNIT3D with scheme 6 and Cookie without API credentials', () => {
+    const result = validateDraft(validDraft({
+      architecture: 'unit3d', scheme: 6, address: 'https://unit3d.example',
+      pages: [{ name: '综合', path: '/torrents', tags: null, selected: true }],
+      token: null, passkey: null,
+    }));
+    expect(result).toEqual({ valid: true, errors: {} });
+  });
+
+  it('accepts a registered Private domain with scheme 7 and no API credentials', () => {
+    const result = validateDraft(validDraft({
+      architecture: 'private', scheme: 7, address: 'https://filelist.io',
+      pages: [{ name: '综合', path: '/browse.php', tags: null, selected: true }],
+      token: null, passkey: null,
+    }));
+    expect(result).toEqual({ valid: true, errors: {} });
+  });
+
+  it('rejects an unregistered domain manually assigned to Private', () => {
+    const result = validateDraft(validDraft({
+      architecture: 'private', scheme: 7, address: 'https://private.example',
+    }));
+    expect(result.errors.address).toBe('该 Private 站点尚未适配');
+  });
 });

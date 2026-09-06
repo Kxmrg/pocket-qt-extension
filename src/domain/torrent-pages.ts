@@ -1,4 +1,5 @@
 import type { ArchitectureId, PageSnapshot } from './types';
+import { privateSiteForHost } from './private-sites';
 
 export interface DraftPage {
   name: string;
@@ -14,6 +15,8 @@ const defaultPathByArchitecture: Partial<Record<ArchitectureId, string>> = {
   haidan: '/torrents.php',
   sunnypt: '/torrents?category=All',
   gazelle: '/torrents.php',
+  unit3d: '/torrents',
+  private: '/torrents',
 };
 
 export function draftPageFromSnapshot(snapshot: PageSnapshot, name: string): DraftPage | null {
@@ -40,6 +43,10 @@ export function createManualPage(id: ArchitectureId): DraftPage {
 }
 
 export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot): DraftPage[] {
+  if (id === 'private') {
+    const site = privateSiteForHost(snapshot.host);
+    return site ? [{ name: '综合', path: site.path, tags: null, selected: true }] : [];
+  }
   if (id === 'gazelle') {
     return [
       { name: '种子', path: '/torrents.php', tags: null, selected: true },
@@ -53,6 +60,11 @@ export function extractTorrentPages(id: ArchitectureId, snapshot: PageSnapshot):
     const page = draftPageFromSnapshot(snapshot, '综合');
     if (page?.path === '/torrents' || page?.path.startsWith('/torrents?')) return [page];
     return [{ name: '综合', path: '/torrents?category=All', tags: null, selected: true }];
+  }
+  if (id === 'unit3d') {
+    const page = draftPageFromSnapshot(snapshot, '综合');
+    if (page?.path === '/torrents' || page?.path.startsWith('/torrents?')) return [page];
+    return [{ name: '综合', path: '/torrents', tags: null, selected: true }];
   }
   const page = draftPageFromSnapshot(snapshot, '综合');
   return page ? [page] : [];

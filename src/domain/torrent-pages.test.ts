@@ -104,6 +104,35 @@ describe('extractTorrentPages', () => {
     });
   });
 
+  it('uses and preserves UNIT3D torrent routes', () => {
+    expect(createManualPage('unit3d')).toEqual({
+      name: '', path: '/torrents', tags: null, selected: true,
+    });
+    expect(extractTorrentPages(
+      'unit3d',
+      snapshotWithLinks([], 'https://tracker.example/torrents?category=movie'),
+    )).toEqual([
+      { name: '综合', path: '/torrents?category=movie', tags: null, selected: true },
+    ]);
+    expect(extractTorrentPages(
+      'unit3d',
+      snapshotWithLinks([], 'https://tracker.example/forums'),
+    )).toEqual([
+      { name: '综合', path: '/torrents', tags: null, selected: true },
+    ]);
+  });
+
+  it.each([
+    ['https://exoticaz.to/', '/torrents'],
+    ['https://filelist.io/', '/browse.php'],
+    ['https://beyond-hd.me/', '/torrents'],
+    ['https://hdbits.org/', '/browse.php'],
+  ] as const)('uses the canonical Private page for %s', (url, path) => {
+    expect(extractTorrentPages('private', snapshotWithLinks([], url))).toEqual([
+      { name: '综合', path, tags: null, selected: true },
+    ]);
+  });
+
   it('falls back to the SunnyPT list route when collected from a detail page', () => {
     expect(extractTorrentPages(
       'sunnypt',

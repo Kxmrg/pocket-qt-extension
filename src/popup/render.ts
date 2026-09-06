@@ -37,6 +37,7 @@ const architectureNames: Record<ArchitectureId, string> = {
   sunnypt: 'SunnyPt',
   gazelle: 'Gazelle',
   unit3d: 'UNIT3D',
+  private: 'Private',
   unknown: '未知架构',
 };
 
@@ -72,7 +73,7 @@ function extensionVersion(): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) {
     return chrome.runtime.getManifest().version;
   }
-  return '0.6.0';
+  return '1.0.0';
 }
 
 function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
@@ -119,7 +120,7 @@ function credentialField(
 }
 
 function architectureSelect(draft: SiteDraft, errors: Record<string, string>): string {
-  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt'];
+  const supported: ArchitectureId[] = ['nexusphp', 'tnode', 'mtorrent', 'haidan', 'sunnypt', 'gazelle', 'unit3d', 'private'];
   const options = [
     ...(draft.architecture === 'unknown' ? ['unknown' as const] : []),
     ...supported,
@@ -149,10 +150,10 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
   const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? '令牌' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
   const cookieLabel = draft.architecture === 'mtorrent' ? 'UUID' : 'Cookie';
-  const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle'
+  const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;

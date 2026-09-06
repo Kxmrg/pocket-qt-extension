@@ -6,6 +6,7 @@ export type ArchitectureId =
   | 'sunnypt'
   | 'gazelle'
   | 'unit3d'
+  | 'private'
   | 'unknown';
 
 export interface PageLink {

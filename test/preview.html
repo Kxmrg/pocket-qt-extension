@@ -32,6 +32,13 @@
       });
       previewErrors.token = '请前往控制台实验室复制令牌并手动填写';
     }
+    if (params.get('arch') === 'unit3d') {
+      Object.assign(draft, {
+        architecture: 'unit3d', scheme: 6, name: 'Blutopia', address: 'https://blutopia.cc',
+        cookie: 'session=unit3d-session', token: null, passkey: null,
+        pages: [{ name: '综合', path: '/torrents', tags: null, selected: true }],
+      });
+    }
     const noop = () => {};
     const actions = {
       onRead: noop, onRefresh: noop, onRequestPermission: noop, onRetry: noop, onArchitectureChange: noop, onFieldChange: noop,
@@ -40,10 +47,10 @@
     };
     const states = {
       idle: { kind: 'idle' },
-      ready: { kind: 'ready', draft, errors: previewErrors, revealed: new Set(), sourceOrigin: params.get('arch') === 'mtorrent' ? 'https://kp.m-team.cc' : 'https://pt.example.com' },
+      ready: { kind: 'ready', draft, errors: previewErrors, revealed: new Set(), sourceOrigin: params.get('arch') === 'mtorrent' ? 'https://kp.m-team.cc' : params.get('arch') === 'unit3d' ? 'https://blutopia.cc' : 'https://pt.example.com' },
       permission: { kind: 'permission', origin: 'https://pt.example.com' },
       error: { kind: 'error', message: '请确认当前页面已完成登录，然后重试。' },
-      unsupported: { kind: 'unsupported', detection: { id: 'unit3d', supported: false, confidence: 'certain', reasons: ['检测到 UNIT3D 标识', '检测到 UNIT3D 种子路由'] } },
+      unsupported: { kind: 'unsupported', detection: { id: 'unknown', supported: false, confidence: 'unknown', reasons: [] } },
       qr: { kind: 'qr', draft, payload: { text: 'preview-only', sourceBytes: 512, compressedBytes: 284 } },
     };
     renderPopup(document.querySelector('#app'), states[kind] || states.ready, actions);

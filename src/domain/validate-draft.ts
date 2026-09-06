@@ -1,4 +1,5 @@
 import type { SiteDraft } from './adapt-site';
+import { privateSiteForHost } from './private-sites';
 
 export interface DraftValidation {
   valid: boolean;
@@ -12,6 +13,8 @@ const expectedScheme: Record<string, number> = {
   haidan: 3,
   sunnypt: 4,
   gazelle: 5,
+  unit3d: 6,
+  private: 7,
 };
 
 function isHttpAddress(value: string): boolean {
@@ -30,6 +33,9 @@ export function validateDraft(draft: SiteDraft): DraftValidation {
   }
   if (!draft.name.trim()) errors.name = '请输入站点名称';
   if (!isHttpAddress(draft.address)) errors.address = '请输入有效的 HTTP 或 HTTPS 站点地址';
+  else if (draft.architecture === 'private' && !privateSiteForHost(new URL(draft.address).hostname)) {
+    errors.address = '该 Private 站点尚未适配';
+  }
 
   if (!draft.cookie.trim()) {
     errors.cookie = draft.architecture === 'mtorrent' ? '请输入 UUID' : '请输入 Cookie';

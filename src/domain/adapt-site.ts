@@ -1,10 +1,11 @@
 import { selectCandidate, type FieldCandidate } from './candidates';
 import { extractTorrentPages, type DraftPage } from './torrent-pages';
 import type { ArchitectureId, DetectionResult, PageSnapshot } from './types';
+import { privateSiteForHost } from './private-sites';
 
 export interface SiteDraft {
   architecture: ArchitectureId;
-  scheme: 0 | 1 | 2 | 3 | 4 | 5 | null;
+  scheme: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | null;
   name: string;
   address: string;
   cookie: string;
@@ -28,17 +29,24 @@ export interface AdaptSiteInput {
   cookieHeader: string;
 }
 
-const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5>> = {
+const schemeMap: Partial<Record<ArchitectureId, 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7>> = {
   nexusphp: 0,
   tnode: 1,
   mtorrent: 2,
   haidan: 3,
   sunnypt: 4,
   gazelle: 5,
+  unit3d: 6,
+  private: 7,
 };
 
 function siteName(snapshot: PageSnapshot, id: ArchitectureId): string {
+  if (id === 'private') return privateSiteForHost(snapshot.host)?.name ?? snapshot.host;
   const withoutGenerator = snapshot.title.replace(/\s*[-|｜:]?\s*Powered by\b.*$/i, '');
+  if (id === 'unit3d') {
+    const finalSegment = withoutGenerator.split(/\s+(?:-|::|\||｜)\s+/).at(-1)?.trim();
+    if (finalSegment) return finalSegment;
+  }
   if (id === 'gazelle') {
     const finalSegment = withoutGenerator.split('::').at(-1)?.trim();
     if (finalSegment) return finalSegment;
@@ -108,7 +116,7 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     address: siteAddress(detection.id, snapshot),
     cookie,
     pages: extractTorrentPages(detection.id, snapshot),
-    passkey: detection.id === 'sunnypt' || detection.id === 'gazelle' ? null : passkey.value || null,
+    passkey: detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'private' ? null : passkey.value || null,
     userAgent: snapshot.userAgent || null,
     importUserAgent: true,
     tags: null,

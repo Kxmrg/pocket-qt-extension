@@ -87,6 +87,36 @@ describe('toOriginPattern', () => {
     expect(cookies.map((cookie) => cookie.name)).toEqual(['c_secure_pass']);
   });
 
+  it('recovers HttpOnly cookies from the active store when URL queries return only page-visible cookies', async () => {
+    const visibleCookies = [
+      { name: 'pigo_session', value: 'visible', domain: 'piggo.me', path: '/', secure: true },
+    ];
+    const allStoreCookies = [
+      ...visibleCookies,
+      { name: 'pigo_np_web_session', value: 'http-only', domain: 'piggo.me', path: '/', secure: true },
+      { name: 'sl-session', value: 'challenge', domain: '.piggo.me', path: '/', secure: true },
+    ];
+    const getAll = vi.fn()
+      .mockResolvedValueOnce(visibleCookies)
+      .mockResolvedValueOnce(visibleCookies)
+      .mockResolvedValueOnce(allStoreCookies);
+    vi.stubGlobal('chrome', {
+      cookies: {
+        getAllCookieStores: vi.fn().mockResolvedValue([{ id: 'default', tabIds: [42] }]),
+        getAll,
+      },
+    });
+
+    const cookies = await readCookies('https://piggo.me/torrents.php', 42);
+
+    expect(getAll).toHaveBeenNthCalledWith(3, { storeId: 'default' });
+    expect(cookies.map((cookie) => cookie.name)).toEqual([
+      'pigo_session',
+      'pigo_np_web_session',
+      'sl-session',
+    ]);
+  });
+
   it('merges ordinary and active-tab partitioned cookies without dropping same-name values', async () => {
     const ordinary = [
       { name: 'session', value: 'ordinary', domain: '.haidan.cc', path: '/', secure: true },

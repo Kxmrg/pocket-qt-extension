@@ -91,9 +91,18 @@ export async function readCookies(url: string, tabId?: number): Promise<CookieLi
       storeId ? { domain: hostname, storeId, partitionKey } : { domain: hostname, partitionKey },
     );
   }
+  // Some Chromium builds return only the document-visible subset for URL and
+  // domain queries. Reading the granted store as a final source recovers
+  // HttpOnly authentication/challenge cookies; host permissions still limit
+  // what the extension can see, and formatCookieHeader filters by URL below.
+  queryDetails.push(storeId ? { storeId } : {});
+  if (partitionKey) {
+    queryDetails.push(storeId ? { storeId, partitionKey } : { partitionKey });
+  }
   const cookieQueries = await Promise.allSettled(queryDetails.map((details) => chrome.cookies.getAll(details)));
   const fulfilledQueries = cookieQueries
-    .filter((result): result is PromiseFulfilledResult<chrome.cookies.Cookie[]> => result.status === 'fulfilled');
+    .filter((result): result is PromiseFulfilledResult<chrome.cookies.Cookie[]> =>
+      result.status === 'fulfilled' && Array.isArray(result.value));
   if (fulfilledQueries.length === 0) throw new Error('Chrome Cookie API unavailable');
 
   const uniqueCookies = new Map<string, chrome.cookies.Cookie>();

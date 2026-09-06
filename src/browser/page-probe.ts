@@ -31,6 +31,31 @@ export function collectPageSnapshot(): PageSnapshot {
     })
     .slice(0, maxLinks);
 
+  const hasRowLinks = (selectors: string[]) => Array.from(document.querySelectorAll('tr')).some(
+    (row) => selectors.every((selector) => row.querySelector(selector)),
+  );
+  const normalizedText = (element: Element) => (element.textContent ?? '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const unit3dTables = Array.from(document.querySelectorAll('table')).filter((table) => {
+    const headers = Array.from(table.querySelectorAll('thead th, thead td')).map(normalizedText);
+    const hasHeader = (aliases: string[]) => headers.some((header) => aliases.some((alias) => header.includes(alias)));
+    return hasHeader(['name', '名称', '标题']) && hasHeader(['size', '体积', '大小']) &&
+      hasHeader(['seeders', '做种']) && hasHeader(['leechers', '吸血鬼', '下载中']) &&
+      hasHeader(['completed', '完成']);
+  });
+  const hasUnit3dRow = unit3dTables.some((table) => Array.from(table.querySelectorAll('tbody tr, tr')).some((row) => {
+    const rowLinks = Array.from(row.querySelectorAll<HTMLAnchorElement>('a[href]'));
+    const paths = rowLinks.map((link) => {
+      try { return new URL(link.href, current.href).pathname.toLowerCase(); } catch { return ''; }
+    });
+    const hasDetail = paths.some((path) => path.includes('/torrents/') && !path.includes('/download'));
+    const hasDownload = paths.some((path) => path.includes('/torrents/') && path.includes('/download'));
+    const hasUploader = paths.some((path) => path.includes('/users/')) || /anonymous|匿名/i.test(row.textContent ?? '');
+    return hasDetail && hasDownload && hasUploader;
+  }));
+  const hasUnit3dFooter = Array.from(document.querySelectorAll('footer a[href], a[href]')).some((link) => {
+    const value = `${link.textContent ?? ''} ${link.getAttribute('href') ?? ''}`.toLowerCase();
+    return /unit3d-(?:rs|announce)|hdinnovations\/unit3d/.test(value);
+  });
   const domMarkers = [
     document.querySelector('body#torrents') && 'body#torrents',
     document.querySelector('#torrent_table.torrent_table.grouping') && 'gazelle-grouping-table',
@@ -39,6 +64,18 @@ export function collectPageSnapshot(): PageSnapshot {
     document.querySelector('.group_torrent') && 'gazelle-torrent-row',
     document.querySelector('.TorrentCover, .TorrentCover-item') && 'gazellepw-cover-wall',
     document.querySelector('[name="resolution"], [name="codec"], [name="container"]') && 'gazellepw-movie-filters',
+    document.querySelector('a[href*="movies.php"]') &&
+      document.querySelector('a[href*="collages.php"]') && 'ptp-movie-routes',
+    document.querySelector('table.torrent_table a[href*="torrents.php?id="]') && 'ptp-group-table',
+    document.querySelector('a[href*="series.php?id="]') && 'btn-series-links',
+    hasRowLinks([
+      'a[href*="torrents.php?id="]',
+      'a[href*="torrents.php?action=download"]',
+      'a[href*="reports.php?action=report"]',
+    ]) && 'btn-torrent-actions',
+    unit3dTables.length > 0 && 'unit3d-torrent-table',
+    hasUnit3dRow && 'unit3d-torrent-row',
+    hasUnit3dFooter && 'unit3d-footer',
   ].filter((value): value is string => Boolean(value));
 
   const storage: PageSnapshot['storage'] = [];

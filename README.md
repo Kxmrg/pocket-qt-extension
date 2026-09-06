@@ -4,12 +4,12 @@
 
 ## 功能
 
-- 识别 NexusPHP、TNode、mTorrent、SunnyPt 和 HaiDanPt 架构站点；
+- 识别 NexusPHP、TNode、mTorrent、SunnyPt、HaiDanPt、Gazelle 和 UNIT3D 架构站点；
 - 读取并整理当前站点的 Cookie 和必要配置；
 - 支持手动修改站点信息和页面信息；
 - 在 Chrome 侧边栏中生成 Pocket Qt 导入二维码。
 
-Gazelle 和 UNIT3D 可被识别，但 Pocket Qt 暂不支持导入，后续可能会提供支持。
+Gazelle 包括原版音乐站结构和 GazellePW 影视站结构。UNIT3D 使用已登录浏览器的 Cookie 和 User-Agent 读取标准 HTML 清单，不需要额外配置 API Token；识别依据架构指纹和页面结构，不限于特定站点域名。
 
 ![Pocket Qt 站点导入插件界面预览](docs/images/pocket-qt-extension-preview.png)
 
