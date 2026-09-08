@@ -6,7 +6,14 @@ export interface FieldCandidate {
   score: number;
 }
 
-export type CandidateField = 'csrfToken' | 'apiToken' | 'uid' | 'passkey';
+export type CandidateField =
+  | 'csrfToken'
+  | 'apiToken'
+  | 'webToken'
+  | 'webDeviceId'
+  | 'webVisitorId'
+  | 'uid'
+  | 'passkey';
 
 export interface CandidateSelection {
   value: string;
@@ -17,6 +24,9 @@ export interface CandidateSelection {
 const aliases: Record<CandidateField, RegExp> = {
   csrfToken: /(?:^|[-_.])(?:x[-_.]?)?csrf(?:[-_.]?token)?$/i,
   apiToken: /(?:x[-_.]?api[-_.]?key|api[-_.]?key|access[-_.]?token|authorization|bearer[-_.]?token)/i,
+  webToken: /^(?:auth|token)$/i,
+  webDeviceId: /^did$/i,
+  webVisitorId: /^visitorId$/i,
   uid: /^(?:uid|user[-_.]?id|userid|member[-_.]?id)$/i,
   passkey: /pass[-_.]?key/i,
 };

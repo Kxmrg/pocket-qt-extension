@@ -9,6 +9,9 @@ function validDraft(overrides: Partial<SiteDraft> = {}): SiteDraft {
     name: 'Example PT',
     address: 'https://pt.example',
     cookie: 'session=secret',
+    webToken: null,
+    webDeviceId: null,
+    webVisitorId: null,
     pages: [{ name: '综合', path: '/torrents.php', tags: null, selected: true }],
     passkey: null,
     userAgent: 'Test UA',
@@ -48,9 +51,19 @@ describe('validateDraft', () => {
     expect(result.errors.token).toBe('请输入 X-Csrf-Token');
   });
 
-  it('requires mTorrent UUID and laboratory token', () => {
-    const result = validateDraft(validDraft({ architecture: 'mtorrent', scheme: 2, cookie: '', token: null }));
-    expect(result.errors).toMatchObject({ cookie: '请输入 UUID', token: '请前往控制台实验室复制令牌并手动填写' });
+  it('requires only mTorrent UID and Access Token', () => {
+    const result = validateDraft(validDraft({
+      architecture: 'mtorrent', scheme: 2, cookie: '', webToken: null,
+      webDeviceId: null, webVisitorId: null, passkey: null, token: null,
+    }));
+    expect(result.errors).toMatchObject({
+      passkey: '请输入 UID',
+      token: '请前往控制台实验室复制令牌并手动填写',
+    });
+    expect(result.errors.cookie).toBeUndefined();
+    expect(result.errors.webToken).toBeUndefined();
+    expect(result.errors.webDeviceId).toBeUndefined();
+    expect(result.errors.webVisitorId).toBeUndefined();
   });
 
   it('requires HaiDan UID', () => {

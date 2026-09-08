@@ -73,7 +73,7 @@ function extensionVersion(): string {
   if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) {
     return chrome.runtime.getManifest().version;
   }
-  return '1.0.0';
+  return '1.0.1';
 }
 
 function appHeader(options: { title?: string; detail?: string; action?: string } = {}): string {
@@ -148,14 +148,26 @@ function pageRows(draft: SiteDraft): string {
 
 function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
   const { draft, errors } = state;
-  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? '令牌' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
-  const cookieLabel = draft.architecture === 'mtorrent' ? 'UUID' : 'Cookie';
+  const tokenLabel = draft.architecture === 'tnode' ? 'X-Csrf-Token' : draft.architecture === 'mtorrent' ? 'Access Token' : draft.architecture === 'haidan' ? 'UID' : 'Token（可选）';
+  const cookieLabel = 'Cookie';
+  const cookieField = draft.architecture === 'mtorrent'
+    ? ''
+    : credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state);
+  const webTokenField = draft.architecture === 'mtorrent'
+    ? credentialField('webToken', 'Web Login Token', draft.webToken, 'webToken', state)
+    : '';
+  const webDeviceIdField = draft.architecture === 'mtorrent'
+    ? credentialField('webDeviceId', 'Device ID', draft.webDeviceId, 'webDeviceId', state)
+    : '';
+  const webVisitorIdField = draft.architecture === 'mtorrent'
+    ? credentialField('webVisitorId', 'Visitor ID', draft.webVisitorId, 'webVisitorId', state)
+    : '';
   const tokenField = draft.architecture === 'nexusphp' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
     : credentialField('token', tokenLabel, draft.token, 'token', state);
-  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'mtorrent' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
+  const passkeyField = draft.architecture === 'tnode' || draft.architecture === 'sunnypt' || draft.architecture === 'gazelle' || draft.architecture === 'unit3d' || draft.architecture === 'private'
     ? ''
-    : credentialField('passkey', 'Passkey（可选）', draft.passkey, 'passkey', state);
+    : credentialField('passkey', draft.architecture === 'mtorrent' ? 'UID' : 'Passkey（可选）', draft.passkey, 'passkey', state);
   const invalid = Object.keys(errors).length > 0;
   return `<div class="shell ready-shell">
     ${appHeader({ title: PLUGIN_NAME, detail: `v${extensionVersion()}`, action: `<button type="button" class="header-action" data-action="refresh">${icon('refresh')}<span>刷新</span></button>` })}
@@ -169,9 +181,12 @@ function readyView(state: Extract<PopupState, { kind: 'ready' }>): string {
         <div class="check-field ua-import-toggle"><input id="import-user-agent" data-field="importUserAgent" type="checkbox" ${draft.importUserAgent ? 'checked' : ''}><label for="import-user-agent">导入 User-Agent</label></div></div>
       </section>
       <section class="panel form-section sensitive-panel"><div class="section-heading"><h2>登录信息</h2>${icon('lock')}</div>
-        ${credentialField('cookie', cookieLabel, draft.cookie, 'cookie', state)}
-        ${tokenField}
+        ${cookieField}
         ${passkeyField}
+        ${tokenField}
+        ${webDeviceIdField}
+        ${webVisitorIdField}
+        ${webTokenField}
       </section>
       <section class="panel form-section pages-panel"><div class="section-heading"><h2>页面</h2></div>
         <div class="page-list">${pageRows(draft)}</div>

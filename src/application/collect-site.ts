@@ -68,16 +68,16 @@ export async function collectSiteDraft(deps: CollectionDeps): Promise<Collection
       ],
     };
     const draft = adaptSite({ detection, snapshot: snapshotWithCookieCandidates, cookieHeader });
-    if (detection.id !== 'mtorrent') {
-      if (cookieReadFailed) {
-        draft.fieldWarnings.cookie = cookieHeader
-          ? 'Chrome 完整 Cookie 读取失败，已使用页面可见 Cookie，请确认'
-          : 'Chrome 完整 Cookie 读取失败，请手动填写';
-      } else if (cookies.length === 0 && cookieHeader) {
-        draft.fieldWarnings.cookie = 'Chrome 未返回完整 Cookie，已使用页面可见 Cookie，请确认';
-      } else if (!cookieHeader) {
-        draft.fieldWarnings.cookie = 'Chrome 和当前页面都未返回 Cookie，请确认已登录并允许读取本站';
-      }
+    if (detection.id === 'mtorrent') {
+      delete draft.fieldWarnings.cookie;
+    } else if (cookieReadFailed) {
+      draft.fieldWarnings.cookie = cookieHeader
+        ? 'Chrome 完整 Cookie 读取失败，已使用页面可见 Cookie，请确认'
+        : 'Chrome 完整 Cookie 读取失败，请手动填写';
+    } else if (cookies.length === 0 && cookieHeader) {
+      draft.fieldWarnings.cookie = 'Chrome 未返回完整 Cookie，已使用页面可见 Cookie，请确认';
+    } else if (!cookieHeader) {
+      draft.fieldWarnings.cookie = 'Chrome 和当前页面都未返回 Cookie，请确认已登录并允许读取本站';
     }
     return { state: 'ready', detection, draft };
   } catch {

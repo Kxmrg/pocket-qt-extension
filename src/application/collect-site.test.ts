@@ -96,22 +96,39 @@ describe('collectSiteDraft', () => {
     expect(result.draft.fieldWarnings.cookie).toContain('Chrome 完整 Cookie');
   });
 
-  it('uses the mTorrent profile UUID and leaves the laboratory token for manual entry', async () => {
+  it('extracts the mTorrent web token and UID while leaving the API token manual', async () => {
     const result = await collectSiteDraft(deps({
       getContext: async () => ({ tabId: 77, url: 'https://kp.m-team.cc/browse', origin: 'https://kp.m-team.cc', hasPermission: true }),
       readSnapshot: async () => ({
         ...nexusSnapshot(), url: 'https://kp.m-team.cc/browse', origin: 'https://kp.m-team.cc', host: 'kp.m-team.cc', meta: [],
         links: [{ text: '用户', href: 'https://kp.m-team.cc/profile/detail/295964' }],
+        storage: [
+          { area: 'local', key: 'auth', value: 'web-login-token' },
+          { area: 'local', key: 'did', value: 'device-id' },
+          { area: 'local', key: 'visitorId', value: 'visitor-id' },
+        ],
       }),
       readCookies: async (_url, tabId) => {
         expect(tabId).toBe(77);
-        return [{ name: 'x-api-key', value: 'must-not-auto-fill', domain: '.m-team.cc', path: '/', secure: true }];
+        return [
+          { name: 'session', value: 'm-team-secret', domain: '.m-team.cc', path: '/', secure: true },
+          { name: 'x-api-key', value: 'must-not-auto-fill', domain: '.m-team.cc', path: '/', secure: true },
+        ];
       },
     }));
     expect(result.state).toBe('ready');
     if (result.state !== 'ready') throw new Error('expected ready result');
-    expect(result.draft).toMatchObject({ architecture: 'mtorrent', cookie: '295964', token: null });
+    expect(result.draft).toMatchObject({
+      architecture: 'mtorrent',
+      cookie: '',
+      webToken: 'web-login-token',
+      webDeviceId: 'device-id',
+      webVisitorId: 'visitor-id',
+      passkey: '295964',
+      token: null,
+    });
     expect(result.draft.fieldWarnings.token).toContain('控制台实验室');
+    expect(result.draft.fieldWarnings.cookie).toBeUndefined();
   });
 
   it('collects UNIT3D as a supported Cookie-authenticated draft', async () => {

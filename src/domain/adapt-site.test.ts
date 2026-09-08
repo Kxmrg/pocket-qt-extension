@@ -57,8 +57,22 @@ describe('adaptSite', () => {
   ])('normalizes M-Team address %s to %s', (url, address) => {
     const draft = adaptSite(input('mtorrent', url, {
       links: [{ text: '我的资料', href: `${new URL(url).origin}/profile/detail/295964` }],
+      storage: [
+        { area: 'local', key: 'auth', value: 'web-login-token' },
+        { area: 'local', key: 'did', value: 'device-id' },
+        { area: 'local', key: 'visitorId', value: 'visitor-id' },
+      ],
     }));
-    expect(draft).toMatchObject({ scheme: 2, address, cookie: '295964', token: null });
+    expect(draft).toMatchObject({
+      scheme: 2,
+      address,
+      cookie: '',
+      webToken: 'web-login-token',
+      webDeviceId: 'device-id',
+      webVisitorId: 'visitor-id',
+      passkey: '295964',
+      token: null,
+    });
     expect(draft.fieldWarnings.token).toBe('请前往控制台实验室复制令牌并手动填写');
   });
 
@@ -125,6 +139,12 @@ describe('adaptSite', () => {
 
   it('marks required special credentials when extraction fails', () => {
     const draft = adaptSite(input('mtorrent', 'https://kp.m-team.cc/browse'));
-    expect(draft.fieldWarnings).toMatchObject({ cookie: '未自动获取 UUID', token: '请前往控制台实验室复制令牌并手动填写' });
+    expect(draft.fieldWarnings).toMatchObject({
+      passkey: '未自动获取 UID',
+      webToken: '未自动获取 网页登录 Token',
+      webDeviceId: '未自动获取 Device ID',
+      webVisitorId: '未自动获取 Visitor ID',
+      token: '请前往控制台实验室复制令牌并手动填写',
+    });
   });
 });

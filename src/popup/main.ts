@@ -104,6 +104,9 @@ const actions: PopupActions = {
         architecture,
         scheme: schemeByArchitecture[architecture] ?? null,
         token: architecture === 'nexusphp' || architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.token,
+        webToken: architecture === 'mtorrent' ? draft.webToken : null,
+        webDeviceId: architecture === 'mtorrent' ? draft.webDeviceId : null,
+        webVisitorId: architecture === 'mtorrent' ? draft.webVisitorId : null,
         passkey: architecture === 'sunnypt' || architecture === 'gazelle' || architecture === 'unit3d' || architecture === 'private' ? null : draft.passkey,
         pages,
         fieldWarnings: {},
@@ -116,6 +119,9 @@ const actions: PopupActions = {
         case 'name': return { ...draft, name: String(value) };
         case 'address': return { ...draft, address: String(value) };
         case 'cookie': return { ...draft, cookie: String(value), fieldWarnings: { ...draft.fieldWarnings, cookie: '' } };
+        case 'webToken': return { ...draft, webToken: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webToken: '' } };
+        case 'webDeviceId': return { ...draft, webDeviceId: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webDeviceId: '' } };
+        case 'webVisitorId': return { ...draft, webVisitorId: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, webVisitorId: '' } };
         case 'token': return { ...draft, token: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, token: '' } };
         case 'passkey': return { ...draft, passkey: String(value) || null, fieldWarnings: { ...draft.fieldWarnings, passkey: '' } };
         case 'userAgent': return { ...draft, userAgent: String(value) || null };

@@ -10,6 +10,9 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
     name: 'Example PT',
     address: 'https://pt.example.com',
     cookie: 'uid=1; pass=secret',
+    webToken: null,
+    webDeviceId: null,
+    webVisitorId: null,
     pages: [
       { name: '综合', path: '/torrents.php', tags: null, selected: true },
       { name: '不导入', path: '/torrents.php?cat=9', tags: null, selected: false },
@@ -37,6 +40,9 @@ const expected = {
     name: 'Example PT',
     address: 'https://pt.example.com',
     cookie: 'uid=1; pass=secret',
+    webToken: null,
+    webDeviceId: null,
+    webVisitorId: null,
     pages: [{ name: '综合', path: '/torrents.php', tags: null }],
     passkey: null,
     userAgent: 'Test UA',
@@ -81,6 +87,37 @@ describe('Pocket Qt import payload', () => {
       passkey: 'must-not-be-sent',
     }));
     expect(payload.site.passkey).toBeNull();
+  });
+
+  it('exports separate mTorrent web token, UID and access token fields', () => {
+    const payload = buildImportPayload(draft({
+      architecture: 'mtorrent', scheme: 2, address: 'https://api.m-team.cc',
+      cookie: '', webToken: 'web-login-token', webDeviceId: 'device-id', webVisitorId: 'visitor-id', passkey: '295964', token: 'access-token',
+    }));
+    expect(payload.site).toMatchObject({
+      scheme: 2,
+      cookie: '',
+      webToken: 'web-login-token',
+      webDeviceId: 'device-id',
+      webVisitorId: 'visitor-id',
+      passkey: '295964',
+      token: 'access-token',
+    });
+  });
+
+  it('allows optional mTorrent web login fields to remain empty', () => {
+    const payload = buildImportPayload(draft({
+      architecture: 'mtorrent', scheme: 2, address: 'https://api.m-team.cc',
+      cookie: '', webToken: null, webDeviceId: null, webVisitorId: null,
+      passkey: '295964', token: 'access-token',
+    }));
+    expect(payload.site).toMatchObject({
+      webToken: null,
+      webDeviceId: null,
+      webVisitorId: null,
+      passkey: '295964',
+      token: 'access-token',
+    });
   });
 
   it('encodes Gazelle without a token or passkey', () => {

@@ -43,6 +43,23 @@ describe('selectCandidate', () => {
     expect(selectCandidate('apiToken', value).value).toBe('api-secret');
   });
 
+  it.each(['auth', 'token'])('extracts the mTorrent web token storage key %s', (key) => {
+    const value = snapshot({ storage: [
+      { area: 'local', key: 'accessToken', value: 'api-token' },
+      { area: 'local', key, value: 'web-login-token' },
+    ] });
+    expect(selectCandidate('webToken', value).value).toBe('web-login-token');
+  });
+
+  it('extracts M-Team device and visitor identifiers from exact storage keys', () => {
+    const value = snapshot({ storage: [
+      { area: 'local', key: 'did', value: 'device-id' },
+      { area: 'local', key: 'visitorId', value: 'visitor-id' },
+    ] });
+    expect(selectCandidate('webDeviceId', value).value).toBe('device-id');
+    expect(selectCandidate('webVisitorId', value).value).toBe('visitor-id');
+  });
+
   it('extracts HaiDan UID from a profile link', () => {
     const result = selectCandidate('uid', snapshot({
       links: [{ text: '我的资料', href: 'https://haidan.cc/userdetails.php?id=42' }],

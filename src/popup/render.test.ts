@@ -7,6 +7,9 @@ function draft(overrides: Partial<SiteDraft> = {}): SiteDraft {
   return {
     architecture: 'nexusphp', scheme: 0, name: 'Example PT', address: 'https://pt.example',
     cookie: 'session=secret',
+    webToken: null,
+    webDeviceId: null,
+    webVisitorId: null,
     pages: [
       { name: '综合', path: '/torrents.php', tags: null, selected: true },
       { name: '电影', path: '/torrents.php?cat=401', tags: null, selected: true },
@@ -48,7 +51,7 @@ describe('renderPopup', () => {
     renderPopup(root, { kind: 'idle' }, actions());
 
     expect(root.querySelector('[data-home-brand]')?.textContent).toContain('Pocket Qt');
-    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v1.0.0');
+    expect(root.querySelector('[data-home-brand]')?.textContent).toContain('站点导入插件 v1.0.1');
     expect(root.querySelectorAll('[data-home-guide] li')).toHaveLength(4);
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('打开并登录 PT 站点，停留在种子列表页面');
     expect(root.querySelector('[data-home-guide]')?.textContent).toContain('点击开始读取站点数据');
@@ -84,7 +87,7 @@ describe('renderPopup', () => {
     expect(root.querySelectorAll('button')).toHaveLength(1);
     expect(root.querySelector('button')?.textContent).toContain('允许读取本站');
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
   });
 
   it('shows UNIT3D as unsupported without a generate action', () => {
@@ -102,7 +105,7 @@ describe('renderPopup', () => {
     renderPopup(root, { kind: 'error', message: '请在普通 HTTP 或 HTTPS 站点中使用' }, actions());
 
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
     expect(root.querySelector('h1')?.textContent).toBe('未能读取站点');
     expect(root.textContent).not.toContain('请在普通 HTTP 或 HTTPS 站点中使用');
     expect(root.querySelector('[role="alert"]')).toBeNull();
@@ -136,21 +139,30 @@ describe('renderPopup', () => {
     expect(root.querySelector('[data-site-context]')?.textContent).toContain('NexusPHP');
     expect(root.querySelector('[data-home-guide]')).toBeNull();
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
     expect(root.querySelector('h2')?.textContent).toBe('站点信息');
     root.querySelector<HTMLButtonElement>('[data-action="refresh"]')?.click();
     expect(handlers.onRefresh).toHaveBeenCalledOnce();
   });
 
   it('shows architecture names without fixed-site aliases', () => {
-    renderPopup(root, { kind: 'ready', draft: draft({ architecture: 'mtorrent', scheme: 2 }), errors: {}, revealed: new Set(), sourceOrigin: 'https://kp.m-team.cc' }, actions());
+    renderPopup(root, { kind: 'ready', draft: draft({
+      architecture: 'mtorrent', scheme: 2, cookie: '', webToken: 'web-token',
+      webDeviceId: 'device-id', webVisitorId: 'visitor-id', passkey: '295964',
+    }), errors: {}, revealed: new Set(), sourceOrigin: 'https://kp.m-team.cc' }, actions());
     expect(root.querySelector('[data-architecture-option="mtorrent"]')?.textContent).toContain('mTorrent');
     expect(root.querySelector('[data-architecture-option="tnode"]')?.textContent).toContain('TNode');
     expect(root.textContent).not.toContain('M-Team');
     expect(root.textContent).not.toContain('朱雀');
-    expect(root.querySelector('label[for="cookie"]')?.textContent).toBe('UUID');
-    expect(root.querySelector('label[for="token"]')?.textContent).toBe('令牌');
-    expect(root.querySelector('#passkey')).toBeNull();
+    expect(root.querySelector('#cookie')).toBeNull();
+    expect([...root.querySelectorAll('.sensitive-panel input')].map((input) => input.id)).toEqual([
+      'passkey', 'token', 'webDeviceId', 'webVisitorId', 'webToken',
+    ]);
+    expect(root.querySelector('label[for="webToken"]')?.textContent).toBe('Web Login Token');
+    expect(root.querySelector('label[for="webDeviceId"]')?.textContent).toBe('Device ID');
+    expect(root.querySelector('label[for="webVisitorId"]')?.textContent).toBe('Visitor ID');
+    expect(root.querySelector('label[for="token"]')?.textContent).toBe('Access Token');
+    expect(root.querySelector('label[for="passkey"]')?.textContent).toBe('UID');
   });
 
   it('hides Passkey for TNode while keeping it for NexusPHP', () => {
@@ -303,7 +315,7 @@ describe('renderPopup', () => {
     expect(root.querySelector('#qr-canvas')).not.toBeNull();
     expect(root.querySelector('#qr-canvas')?.getAttribute('aria-label')).toBe('Pocket Qt 站点导入二维码');
     expect(root.querySelector('.app-brand')?.textContent).toContain('Pocket Qt 站点导入插件');
-    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.0');
+    expect(root.querySelector('.app-brand')?.textContent).toContain('v1.0.1');
     expect(root.querySelector('.payload-meta')).toBeNull();
     const siteInfo = root.querySelector('[data-qr-site-info]');
     expect(siteInfo?.textContent).toContain('架构');

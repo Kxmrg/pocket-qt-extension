@@ -9,6 +9,9 @@ export interface SiteDraft {
   name: string;
   address: string;
   cookie: string;
+  webToken: string | null;
+  webDeviceId: string | null;
+  webVisitorId: string | null;
   pages: DraftPage[];
   passkey: string | null;
   userAgent: string | null;
@@ -86,7 +89,11 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   const warnings: Record<string, string> = {};
   const alternatives: Record<string, FieldCandidate[]> = {};
   const passkey = selectCandidate('passkey', snapshot);
-  let cookie = cookieHeader;
+  const cookie = detection.id === 'mtorrent' ? '' : cookieHeader;
+  let mTorrentUid = '';
+  let webToken = '';
+  let webDeviceId = '';
+  let webVisitorId = '';
   let token = '';
 
   if (detection.id === 'tnode') {
@@ -95,9 +102,18 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     addSelectionMetadata('token', 'X-Csrf-Token', csrf, warnings, alternatives);
   } else if (detection.id === 'mtorrent') {
     const uid = selectCandidate('uid', snapshot);
-    cookie = uid.value;
+    const loginToken = selectCandidate('webToken', snapshot);
+    const deviceId = selectCandidate('webDeviceId', snapshot);
+    const visitorId = selectCandidate('webVisitorId', snapshot);
+    mTorrentUid = uid.value;
+    webToken = loginToken.value;
+    webDeviceId = deviceId.value;
+    webVisitorId = visitorId.value;
     token = '';
-    addSelectionMetadata('cookie', 'UUID', uid, warnings, alternatives);
+    addSelectionMetadata('passkey', 'UID', uid, warnings, alternatives);
+    addSelectionMetadata('webToken', '网页登录 Token', loginToken, warnings, alternatives);
+    addSelectionMetadata('webDeviceId', 'Device ID', deviceId, warnings, alternatives);
+    addSelectionMetadata('webVisitorId', 'Visitor ID', visitorId, warnings, alternatives);
     warnings.token = '请前往控制台实验室复制令牌并手动填写';
   } else if (detection.id === 'haidan') {
     const uid = selectCandidate('uid', snapshot);
@@ -106,8 +122,10 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
   }
 
   if (!cookie && detection.id !== 'unknown') warnings.cookie ??= '未自动获取 Cookie';
-  if (passkey.needsConfirmation) warnings.passkey = 'Passkey 存在多个候选，请确认';
-  if (passkey.alternatives.length > 0) alternatives.passkey = passkey.alternatives;
+  if (detection.id !== 'mtorrent') {
+    if (passkey.needsConfirmation) warnings.passkey = 'Passkey 存在多个候选，请确认';
+    if (passkey.alternatives.length > 0) alternatives.passkey = passkey.alternatives;
+  }
 
   return {
     architecture: detection.id,
@@ -115,8 +133,15 @@ export function adaptSite({ detection, snapshot, cookieHeader }: AdaptSiteInput)
     name: detection.id === 'tnode' ? 'ZhuQue' : siteName(snapshot, detection.id),
     address: siteAddress(detection.id, snapshot),
     cookie,
+    webToken: webToken || null,
+    webDeviceId: webDeviceId || null,
+    webVisitorId: webVisitorId || null,
     pages: extractTorrentPages(detection.id, snapshot),
-    passkey: detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'private' ? null : passkey.value || null,
+    passkey: detection.id === 'mtorrent'
+      ? mTorrentUid || null
+      : detection.id === 'sunnypt' || detection.id === 'gazelle' || detection.id === 'unit3d' || detection.id === 'private'
+        ? null
+        : passkey.value || null,
     userAgent: snapshot.userAgent || null,
     importUserAgent: true,
     tags: null,

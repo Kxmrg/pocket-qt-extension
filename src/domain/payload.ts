@@ -7,6 +7,9 @@ export interface SiteConfigPayload {
   name: string;
   address: string;
   cookie: string;
+  webToken: string | null;
+  webDeviceId: string | null;
+  webVisitorId: string | null;
   pages: Array<{ name: string; path: string; tags: string | null }>;
   passkey: string | null;
   userAgent: string | null;
@@ -42,6 +45,9 @@ export function buildImportPayload(draft: SiteDraft): PocketPtImportPayload {
       name: draft.name,
       address: draft.address,
       cookie: draft.cookie,
+      webToken: draft.scheme === 2 ? draft.webToken : null,
+      webDeviceId: draft.scheme === 2 ? draft.webDeviceId : null,
+      webVisitorId: draft.scheme === 2 ? draft.webVisitorId : null,
       pages: draft.pages
         .filter((page) => page.selected)
         .map(({ name, path, tags }) => ({ name, path, tags })),
